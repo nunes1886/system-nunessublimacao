@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nunes Sublimação PDV v7</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; }
+        .hidden { display: none; }
+        .scale-in { animation: scaleIn 0.2s ease-out; }
+        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        input, select, button { font-size: 16px; touch-action: manipulation; }
+        
+        #receipt-canvas {
+            width: 400px; background: white; padding: 20px;
+            position: absolute; top: -9999px; left: -9999px;
+            font-family: 'Courier New', Courier, monospace; border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen pb-32">
+
+    <nav class="bg-purple-700 text-white p-3 shadow-lg sticky top-0 z-50 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <img id="app-logo" src="" class="hidden w-10 h-10 rounded-full bg-white object-contain p-0.5 border-2 border-white">
+            <h1 class="text-lg font-bold leading-tight">Nunes<br><span class="text-xs font-normal opacity-80">Sublimação</span></h1>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="resetSystem()" class="text-xs bg-red-500/80 hover:bg-red-600 px-3 py-1.5 rounded text-white border border-red-400 backdrop-blur-sm">
+                <i class="fas fa-trash"></i> Limpar
+            </button>
+            <button onclick="toggleAdmin()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded border border-white/40 backdrop-blur-sm">
+                <i class="fas fa-cog"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 max-w-md">
+
+        <div id="sales-view">
+            
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-4 border border-gray-200">
+                <h2 class="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">Novo Item</h2>
+                
+                <div class="mb-3">
+                    <select id="product-select" onchange="loadSizes()" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-medium outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+
+                <div id="product-image-preview" class="hidden mb-3 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 relative h-40">
+                    <img id="img-display" src="" alt="Produto" class="w-full h-full object-contain mx-auto">
+                </div>
+
+                <div id="size-container" class="hidden mb-3">
+                    <select id="size-select" onchange="calculatePreview()" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 outline-none focus:ring-2 focus:ring-purple-500">
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Quantidade</label>
+                        <input type="number" id="quantity" value="10" min="1" oninput="calculatePreview()" class="w-full p-2 border border-gray-300 rounded-lg text-center font-bold text-gray-700 text-lg">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Desconto %</label>
+                        <input type="number" id="discount" value="0" min="0" max="100" oninput="calculatePreview()" class="w-full p-2 border border-gray-300 rounded-lg text-center text-gray-700 text-lg">
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center bg-purple-50 p-2 rounded mb-3 border border-purple-100">
+                    <span class="text-xs text-purple-600 font-bold uppercase">Valor deste Item:</span>
+                    <span id="preview-total" class="text-xl font-bold text-purple-700">R$ 0,00</span>
+                </div>
+
+                <button onclick="addToCart()" class="w-full bg-purple-600 active:bg-purple-800 text-white font-bold h-[45px] rounded-lg shadow flex items-center justify-center gap-2 hover:bg-purple-700 transition">
+                    <i class="fas fa-cart-plus"></i> Adicionar ao Pedido
+                </button>
+            </div>
+
+            <div id="cart-section" class="hidden">
+                <h3 class="text-sm font-bold text-gray-600 mb-2 px-1">Resumo do Pedido</h3>
+                <ul id="cart-list" class="space-y-2 mb-20"></ul>
+            </div>
+
+            <div id="footer-actions" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] hidden z-40">
+                <div class="container mx-auto max-w-md flex justify-between items-center gap-4">
+                    <div class="flex flex-col">
+                        <span class="text-xs text-gray-500 font-bold uppercase">Total Final</span>
+                        <span id="grand-total" class="text-2xl font-bold text-green-600">R$ 0,00</span>
+                    </div>
+                    <button id="btn-finish" onclick="finalizeOrder()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
+                        <span>Enviar</span> <i class="fab fa-whatsapp text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="admin-view" class="hidden">
+            <div class="bg-white p-5 rounded-xl shadow-md border-t-4 border-purple-500">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Admin</h2>
+                    <button onclick="toggleAdmin()" class="text-gray-400 hover:text-red-500 px-2 text-xl">&times;</button>
+                </div>
+
+                <details class="mb-6 bg-purple-50 p-3 rounded-lg border border-purple-100">
+                    <summary class="text-purple-700 font-bold cursor-pointer text-sm">🛠️ Configurações</summary>
+                    <div class="mt-3 space-y-3">
+                        <div><label class="block text-xs text-gray-500 mb-1">Logo</label><input type="file" id="settings-logo-input" accept="image/*" class="text-xs w-full"></div>
+                        <div><label class="block text-xs text-gray-500 mb-1">Senha</label><input type="text" id="settings-password" class="w-full p-2 text-sm border rounded"></div>
+                        <button onclick="saveSettings()" class="w-full bg-purple-600 text-white text-xs py-2 rounded font-bold">Salvar</button>
+                    </div>
+                </details>
+
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
+                    <h3 class="font-bold text-sm text-gray-600 mb-3">Novo Produto</h3>
+                    <input type="text" id="new-prod-name" placeholder="Nome" class="w-full p-3 border rounded-lg mb-3">
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center bg-white mb-3" onclick="document.getElementById('new-prod-file').click()">
+                        <i class="fas fa-camera text-gray-400"></i> <span class="text-xs text-gray-500">Foto</span>
+                        <input type="file" id="new-prod-file" accept="image/*" class="hidden">
+                    </div>
+                    <input type="hidden" id="new-prod-img-base64">
+                    <textarea id="new-prod-sizes" rows="3" placeholder="Preços (Ex: P=10.00)" class="w-full p-3 border rounded-lg mb-3 font-mono text-sm"></textarea>
+                    <button onclick="saveProduct()" class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg">Salvar</button>
+                </div>
+                <ul id="product-list" class="divide-y divide-gray-100"></ul>
+                <div class="mt-8 pt-4 border-t text-center space-y-2">
+                    <button onclick="exportData()" class="text-xs text-blue-500 underline">Backup</button>
+                    <button onclick="importData()" class="text-xs text-blue-500 underline ml-4">Restaurar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="receipt-canvas">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img id="receipt-logo" src="" style="width: 60px; margin-bottom: 5px; display: none;">
+            <h2 style="margin: 0; font-size: 18px; font-weight: bold;">ORÇAMENTO</h2>
+            <p style="margin: 0; font-size: 12px; color: #666;">Nunes Sublimação</p>
+            <p style="margin: 0; font-size: 12px; color: #666;" id="receipt-date"></p>
+        </div>
+        <hr style="border: 1px dashed #ccc;">
+        <div id="receipt-items" style="margin: 15px 0;"></div>
+        <hr style="border: 1px dashed #ccc;">
+        <div style="text-align: right; margin-top: 15px;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: bold;" id="receipt-total">R$ 0,00</h1>
+        </div>
+    </div>
+
+    <script>
+        let catalog = []; let cart = []; let settings = { password: "1234", logo: "" };
+
+        function init() {
+            try {
+                const sCat = localStorage.getItem('sublimacao_catalog_v3');
+                if (sCat) catalog = JSON.parse(sCat);
+                if (!Array.isArray(catalog)) catalog = [];
+                const sSet = localStorage.getItem('sublimacao_settings');
+                if (sSet) settings = JSON.parse(sSet);
+                applySettings();
+            } catch (e) { catalog = []; }
+            renderProductOptions(); renderAdminList();
+        }
+
+        // --- CÁLCULO EM TEMPO REAL (NOVO) ---
+        function calculatePreview() {
+            const index = document.getElementById('product-select').value;
+            const previewLabel = document.getElementById('preview-total');
+            
+            if (index === "") {
+                previewLabel.textContent = "R$ 0,00";
+                return;
+            }
+
+            const sizeSel = document.getElementById('size-select');
+            let unitPrice = 0;
+
+            // Pega o preço (se tiver select de tamanho visível ou único)
+            if (sizeSel.options.length > 0 && sizeSel.selectedIndex !== -1) {
+                unitPrice = parseFloat(sizeSel.value);
+            }
+
+            const qtd = parseInt(document.getElementById('quantity').value) || 0;
+            const desc = parseFloat(document.getElementById('discount').value) || 0;
+
+            let total = unitPrice * qtd;
+            if (desc > 0) total -= total * (desc / 100);
+
+            previewLabel.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+        }
+
+        // --- CARRINHO ---
+        function addToCart() {
+            const index = document.getElementById('product-select').value;
+            if (index === "") return alert("Selecione um produto!");
+            const prod = catalog[index];
+            const sizeSel = document.getElementById('size-select');
+            
+            let sizeName = "Único"; let unitPrice = 0;
+            if (prod.prices && Object.keys(prod.prices).length > 0) {
+                 if (sizeSel.selectedIndex === -1) return alert("Selecione um tamanho!");
+                 sizeName = sizeSel.options[sizeSel.selectedIndex].dataset.sizeName;
+                 unitPrice = parseFloat(sizeSel.value);
+            }
+
+            const qtd = parseInt(document.getElementById('quantity').value) || 1;
+            const desc = parseFloat(document.getElementById('discount').value) || 0;
+            let total = unitPrice * qtd;
+            if(desc > 0) total -= total * (desc/100);
+
+            cart.push({ prodName: prod.name, size: sizeName, qtd, unitPrice, discount: desc, total, image: prod.image });
+            
+            updateCartUI();
+            
+            // Reset parcial
+            document.getElementById('quantity').value = "10";
+            document.getElementById('discount').value = "0";
+            calculatePreview(); // Reseta o preview
+            
+            setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+        }
+
+        function removeFromCart(i) { cart.splice(i, 1); updateCartUI(); }
+        
+        function resetSystem() {
+            if(cart.length > 0 && !confirm("Limpar pedido?")) return;
+            cart = [];
+            document.getElementById('product-select').value = "";
+            loadSizes();
+            updateCartUI();
+            calculatePreview();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateCartUI() {
+            const list = document.getElementById('cart-list');
+            const footer = document.getElementById('footer-actions');
+            const section = document.getElementById('cart-section');
+            const totalDisplay = document.getElementById('grand-total');
+
+            list.innerHTML = ''; let grandTotal = 0;
+
+            if (cart.length === 0) {
+                section.classList.add('hidden'); footer.classList.add('hidden');
+                document.body.style.paddingBottom = "0"; return;
+            }
+
+            section.classList.remove('hidden'); footer.classList.remove('hidden');
+            document.body.style.paddingBottom = "100px";
+
+            cart.forEach((item, index) => {
+                grandTotal += item.total;
+                list.innerHTML += `
+                    <li class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center scale-in">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-purple-100 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold text-purple-600">${index + 1}</div>
+                            <div>
+                                <div class="font-bold text-gray-800 text-sm">${item.prodName} <span class="font-normal text-gray-500 text-xs">(${item.size})</span></div>
+                                <div class="text-xs text-gray-500">${item.qtd}x R$ ${item.unitPrice.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-gray-700 text-sm">R$ ${item.total.toFixed(2).replace('.',',')}</div>
+                            <button onclick="removeFromCart(${index})" class="text-[10px] text-red-400 p-1"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>`;
+            });
+            totalDisplay.textContent = `R$ ${grandTotal.toFixed(2).replace('.', ',')}`;
+        }
+
+        // --- FINALIZAÇÃO ---
+        async function finalizeOrder() {
+            if (cart.length === 0) return;
+            const btn = document.getElementById('btn-finish');
+            const originalBtn = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
+
+            try {
+                let text = `*ORÇAMENTO - NUNES SUBLIMAÇÃO* 🛍️\n\n`;
+                let grandTotal = 0;
+                cart.forEach((item) => {
+                    grandTotal += item.total;
+                    text += `${item.qtd}x ${item.prodName} (${item.size})\n`;
+                });
+                text += `\n*TOTAL: R$ ${grandTotal.toFixed(2).replace('.', ',')}*`;
+
+                let filesArray = [];
+                if (cart.length === 1 && cart[0].image && cart[0].image.startsWith('data:image')) {
+                    const res = await fetch(cart[0].image);
+                    const blob = await res.blob();
+                    filesArray = [new File([blob], "produto.jpg", { type: "image/jpeg" })];
+                } else if (cart.length > 1) {
+                    const receiptBlob = await generateReceiptImage(grandTotal);
+                    if(receiptBlob) filesArray = [new File([receiptBlob], "pedido.png", { type: "image/png" })];
+                }
+
+                if (navigator.share && filesArray.length > 0 && navigator.canShare({ files: filesArray })) {
+                    await navigator.share({ files: filesArray, text: text });
+                } else {
+                    await navigator.share({ text: text });
+                }
+                setTimeout(() => { resetSystem(); }, 3000);
+            } catch (e) {
+                copyTextToClipboard(text);
+                setTimeout(() => resetSystem(), 3000);
+            } finally {
+                btn.innerHTML = originalBtn;
+            }
+        }
+
+        function generateReceiptImage(totalVal) {
+            return new Promise((resolve) => {
+                const divItems = document.getElementById('receipt-items');
+                divItems.innerHTML = '';
+                const rLogo = document.getElementById('receipt-logo');
+                if(settings.logo) { rLogo.src = settings.logo; rLogo.style.display = 'inline-block'; }
+                document.getElementById('receipt-date').innerText = new Date().toLocaleString('pt-BR');
+                cart.forEach(item => {
+                    divItems.innerHTML += `<div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px;"><span>${item.qtd}x ${item.prodName} <small>(${item.size})</small></span><span>R$ ${item.total.toFixed(2).replace('.',',')}</span></div>`;
+                });
+                document.getElementById('receipt-total').innerText = `R$ ${totalVal.toFixed(2).replace('.',',')}`;
+                html2canvas(document.getElementById('receipt-canvas')).then(canvas => canvas.toBlob(blob => resolve(blob))).catch(e => resolve(null));
+            });
+        }
+
+        function copyTextToClipboard(text) {
+            const ta = document.createElement("textarea");
+            ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            alert("Texto copiado (PC não envia imagem direto).");
+        }
+
+        // --- AUXILIARES (Tamanho, Imagem, Settings) ---
+        function loadSizes() {
+            const index = document.getElementById('product-select').value;
+            const sizeSel = document.getElementById('size-select');
+            const imgDiv = document.getElementById('product-image-preview');
+            const sizeContainer = document.getElementById('size-container');
+            
+            sizeSel.innerHTML = ''; sizeContainer.classList.add('hidden'); imgDiv.classList.add('hidden');
+            
+            if (index === "") { calculatePreview(); return; }
+
+            const prod = catalog[index];
+            if (prod.image) { document.getElementById('img-display').src = prod.image; imgDiv.classList.remove('hidden'); }
+
+            if (prod.prices && Object.keys(prod.prices).length > 0) {
+                let hasValid = false;
+                for (let [size, price] of Object.entries(prod.prices)) {
+                    if(price !== null && !isNaN(price)) {
+                        let opt = new Option(`${size} - R$ ${parseFloat(price).toFixed(2)}`, price);
+                        opt.dataset.sizeName = size;
+                        sizeSel.add(opt); hasValid = true;
+                    }
+                }
+                if(hasValid) sizeContainer.classList.remove('hidden');
+            }
+            calculatePreview(); // Recalcula assim que troca o produto
+        }
+
+        // Settings, Images & Admin functions (Same as before)
+        function applySettings() { const logo = document.getElementById('app-logo'); if(settings.logo) { logo.src = settings.logo; logo.classList.remove('hidden'); } document.getElementById('settings-password').value = settings.password; }
+        document.getElementById('settings-logo-input').addEventListener('change', function(e) { processImage(e.target.files[0], 150, (b64) => { settings.logo = b64; }); });
+        document.getElementById('new-prod-file').addEventListener('change', function(e) { processImage(e.target.files[0], 500, (b64) => { document.getElementById('new-prod-img-base64').value = b64; }); });
+        function processImage(f,mw,cb){if(!f)return;const r=new FileReader();r.onload=(e)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');const x=c.getContext('2d');let w=i.width,h=i.height;if(w>h){if(w>mw){h*=mw/w;w=mw}}else{if(h>mw){w*=mw/h;h=mw}}c.width=w;c.height=h;x.drawImage(i,0,0,w,h);cb(c.toDataURL('image/jpeg',0.7))};i.src=e.target.result};r.readAsDataURL(f)}
+        function saveSettings() { settings.password = document.getElementById('settings-password').value; localStorage.setItem('sublimacao_settings', JSON.stringify(settings)); applySettings(); alert("Salvo!"); }
+        function saveProduct() { const n=document.getElementById('new-prod-name').value;const s=document.getElementById('new-prod-sizes').value;const i=document.getElementById('new-prod-img-base64').value;if(!n||!s)return alert("Preencha tudo!");const p={};s.split('\n').forEach(l=>{if(l.includes('=')){let [k,v]=l.split('=');let val=parseFloat(v.replace('R$','').trim().replace(',','.'));if(!isNaN(val))p[k.trim()]=val}});try{catalog.push({id:Date.now(),name:n,prices:p,image:i});localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(catalog));renderAdminList();renderProductOptions();document.getElementById('new-prod-name').value='';document.getElementById('new-prod-sizes').value='';document.getElementById('new-prod-img-base64').value='';alert("Produto Add!");}catch(e){alert("Memória cheia!");catalog.pop()}}
+        function deleteProduct(i) { if(confirm("Apagar?")) { catalog.splice(i,1); localStorage.setItem('sublimacao_catalog_v3', JSON.stringify(catalog)); renderAdminList(); renderProductOptions(); } }
+        function renderAdminList() { const l=document.getElementById('product-list');l.innerHTML='';catalog.forEach((p,i)=>{l.innerHTML+=`<li class="flex justify-between py-2 border-b text-sm"><span>${p.name}</span><button onclick="deleteProduct(${i})" class="text-red-500"><i class="fas fa-trash"></i></button></li>`}); }
+        function renderProductOptions() { const s=document.getElementById('product-select');s.innerHTML='<option value="">Selecione...</option>';catalog.forEach((p,i)=>s.add(new Option(p.name, i))); }
+        function toggleAdmin() { const a=document.getElementById('admin-view');const s=document.getElementById('sales-view');if(a.classList.contains('hidden')){if(prompt("Senha:")===settings.password){s.classList.add('hidden');a.classList.remove('hidden')}}else{a.classList.add('hidden');s.classList.remove('hidden')}}
+        function exportData() { const d="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({catalog,settings}));const a=document.createElement('a');a.href=d;a.download="backup.json";a.click(); }
+        function importData() { const j=prompt("Cole JSON:");if(j){try{const d=JSON.parse(j);if(d.catalog)localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(d.catalog));if(d.settings)localStorage.setItem('sublimacao_settings',JSON.stringify(d.settings));location.reload()}catch(e){alert("Erro")}} }
+
+        init();
+    </script>
+</body>
+</html>
