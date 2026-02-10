@@ -8,7 +8,6 @@
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
-        // Configuração do Tailwind para aceitar cores dinâmicas via JS se necessário
         tailwind.config = { theme: { extend: { colors: { primary: '#7e22ce' } } } }
     </script>
     <style>
@@ -17,14 +16,7 @@
         .scale-in { animation: scaleIn 0.2s ease-out; }
         @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         input, select, button { font-size: 16px; touch-action: manipulation; }
-        
-        #receipt-canvas {
-            width: 400px; background: white; padding: 20px;
-            position: absolute; top: -9999px; left: -9999px;
-            font-family: 'Courier New', Courier, monospace; border: 1px solid #ddd;
-        }
-        
-        /* Classes utilitárias para temas dinâmicos via Style Tag */
+        #receipt-canvas { width: 400px; background: white; padding: 20px; position: absolute; top: -9999px; left: -9999px; font-family: 'Courier New', Courier, monospace; border: 1px solid #ddd; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen pb-32">
@@ -47,25 +39,20 @@
     <div class="container mx-auto p-4 max-w-md">
 
         <div id="sales-view">
-            
             <div class="bg-white p-4 rounded-xl shadow-sm mb-4 border border-gray-200">
                 <h2 class="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">Novo Item</h2>
-                
                 <div class="mb-3">
                     <select id="product-select" onchange="loadSizes()" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-medium outline-none focus:ring-2 focus:ring-purple-500">
                         <option value="">Selecione...</option>
                     </select>
                 </div>
-
                 <div id="product-image-preview" class="hidden mb-3 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 relative h-40">
                     <img id="img-display" src="" alt="Produto" class="w-full h-full object-contain mx-auto">
                 </div>
-
                 <div id="size-container" class="hidden mb-3">
                     <select id="size-select" onchange="calculatePreview()" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 outline-none focus:ring-2 focus:ring-purple-500">
                     </select>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3 mb-2">
                     <div>
                         <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Quantidade</label>
@@ -76,22 +63,18 @@
                         <input type="number" id="discount" value="0" min="0" max="100" oninput="calculatePreview()" class="w-full p-2 border border-gray-300 rounded-lg text-center text-gray-700 text-lg">
                     </div>
                 </div>
-
                 <div class="flex justify-between items-center bg-gray-50 p-2 rounded mb-3 border border-gray-200">
                     <span class="text-xs text-gray-600 font-bold uppercase">Valor Item:</span>
                     <span id="preview-total" class="text-xl font-bold theme-text-color">R$ 0,00</span>
                 </div>
-
                 <button id="btn-add" onclick="addToCart()" class="w-full theme-bg-color text-white font-bold h-[45px] rounded-lg shadow flex items-center justify-center gap-2 hover:opacity-90 transition">
                     <i class="fas fa-cart-plus"></i> Adicionar
                 </button>
             </div>
-
             <div id="cart-section" class="hidden">
                 <h3 class="text-sm font-bold text-gray-600 mb-2 px-1">Resumo do Pedido</h3>
                 <ul id="cart-list" class="space-y-2 mb-20"></ul>
             </div>
-
             <div id="footer-actions" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] hidden z-40">
                 <div class="container mx-auto max-w-md flex justify-between items-center gap-4">
                     <div class="flex flex-col">
@@ -103,7 +86,6 @@
                     </button>
                 </div>
             </div>
-
         </div>
 
         <div id="admin-view" class="hidden">
@@ -113,340 +95,114 @@
                     <button onclick="toggleAdmin()" class="text-gray-400 hover:text-red-500 px-2 text-xl">&times;</button>
                 </div>
 
-                <details class="mb-6 bg-gray-50 p-3 rounded-lg border border-gray-200" open>
-                    <summary class="font-bold cursor-pointer text-sm theme-text-color">🛠️ Personalizar Marca</summary>
+                <details class="mb-6 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <summary class="font-bold cursor-pointer text-sm theme-text-color">🛠️ Configurações</summary>
                     <div class="mt-3 space-y-3">
-                        <div>
-                            <label class="block text-xs text-gray-500 mb-1">Nome da Empresa</label>
-                            <input type="text" id="settings-name" placeholder="Ex: Nunes Sublimação" class="w-full p-2 text-sm border rounded">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs text-gray-500 mb-1">Cor do Sistema</label>
-                            <select id="settings-color" class="w-full p-2 text-sm border rounded" onchange="previewColor(this.value)">
-                                <option value="purple">Roxo (Padrão)</option>
-                                <option value="blue">Azul Profissional</option>
-                                <option value="green">Verde Natureza</option>
-                                <option value="pink">Rosa Confeitaria</option>
-                                <option value="slate">Preto Minimalista</option>
-                                <option value="orange">Laranja Energia</option>
-                            </select>
-                        </div>
-
+                        <div><label class="block text-xs text-gray-500 mb-1">Nome da Empresa</label><input type="text" id="settings-name" class="w-full p-2 text-sm border rounded"></div>
+                        <div><label class="block text-xs text-gray-500 mb-1">Cor do Sistema</label><select id="settings-color" class="w-full p-2 text-sm border rounded" onchange="previewColor(this.value)"><option value="purple">Roxo</option><option value="blue">Azul</option><option value="green">Verde</option><option value="pink">Rosa</option><option value="slate">Preto</option><option value="orange">Laranja</option></select></div>
                         <div><label class="block text-xs text-gray-500 mb-1">Logo</label><input type="file" id="settings-logo-input" accept="image/*" class="text-xs w-full"></div>
                         <div><label class="block text-xs text-gray-500 mb-1">Senha Admin</label><input type="text" id="settings-password" class="w-full p-2 text-sm border rounded"></div>
-                        
                         <button onclick="saveSettings()" id="btn-save-settings" class="w-full theme-bg-color text-white text-xs py-2 rounded font-bold">Salvar Configurações</button>
                     </div>
                 </details>
 
                 <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200" id="product-form-container">
-                    <h3 class="font-bold text-sm text-gray-600 mb-3 flex justify-between">
-                        <span id="form-title">Novo Produto</span>
-                        <button id="btn-cancel-edit" onclick="cancelEdit()" class="text-xs text-red-500 hidden">Cancelar</button>
-                    </h3>
-                    
+                    <h3 class="font-bold text-sm text-gray-600 mb-3 flex justify-between"><span id="form-title">Novo Produto</span><button id="btn-cancel-edit" onclick="cancelEdit()" class="text-xs text-red-500 hidden">Cancelar</button></h3>
                     <input type="text" id="new-prod-name" placeholder="Nome do Produto" class="w-full p-3 border rounded-lg mb-3">
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center bg-white mb-3 relative" onclick="document.getElementById('new-prod-file').click()">
-                        <i class="fas fa-camera text-gray-400"></i> <span class="text-xs text-gray-500">Foto</span>
-                        <input type="file" id="new-prod-file" accept="image/*" class="hidden">
-                        <img id="form-img-preview" class="hidden h-16 w-16 object-cover absolute right-2 top-1 rounded border">
-                    </div>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center bg-white mb-3 relative" onclick="document.getElementById('new-prod-file').click()"><i class="fas fa-camera text-gray-400"></i> <span class="text-xs text-gray-500">Foto</span><input type="file" id="new-prod-file" accept="image/*" class="hidden"><img id="form-img-preview" class="hidden h-16 w-16 object-cover absolute right-2 top-1 rounded border"></div>
                     <input type="hidden" id="new-prod-img-base64">
                     <textarea id="new-prod-sizes" rows="3" placeholder="Preços (Ex: P=10.00)" class="w-full p-3 border rounded-lg mb-3 font-mono text-sm"></textarea>
-                    
                     <button id="btn-save-prod" onclick="saveProduct()" class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg shadow">Salvar Produto</button>
                 </div>
 
                 <h3 class="font-bold text-gray-600 text-sm mb-2">Lista de Produtos</h3>
                 <ul id="product-list" class="divide-y divide-gray-100"></ul>
                 
-                <div class="mt-8 pt-4 border-t text-center space-y-2">
-                    <button onclick="exportData()" class="text-xs text-blue-500 underline">Backup</button>
-                    <button onclick="importData()" class="text-xs text-blue-500 underline ml-4">Restaurar</button>
+                <div class="mt-8 pt-4 border-t text-center space-y-4">
+                    <p class="text-xs text-gray-400">Migração de Dados</p>
+                    <div class="flex justify-center gap-4">
+                        <button onclick="exportData()" class="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded border border-blue-200">
+                            <i class="fas fa-download"></i> Baixar Backup
+                        </button>
+                        
+                        <label class="text-xs bg-green-50 text-green-600 px-3 py-1 rounded border border-green-200 cursor-pointer">
+                            <i class="fas fa-upload"></i> Restaurar Backup
+                            <input type="file" id="restore-file-input" accept=".json" class="hidden" onchange="importData(this)">
+                        </label>
+                    </div>
+                    <button onclick="hardReset()" class="text-xs text-red-400 underline opacity-60">Resetar Tudo</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="receipt-canvas">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <img id="receipt-logo" src="" style="width: 60px; margin-bottom: 5px; display: none;">
-            <h2 style="margin: 0; font-size: 18px; font-weight: bold;">ORÇAMENTO</h2>
-            <p style="margin: 0; font-size: 12px; color: #666;" id="receipt-store-name">Sua Loja</p>
-            <p style="margin: 0; font-size: 12px; color: #666;" id="receipt-date"></p>
-        </div>
-        <hr style="border: 1px dashed #ccc;">
-        <div id="receipt-items" style="margin: 15px 0;"></div>
-        <hr style="border: 1px dashed #ccc;">
-        <div style="text-align: right; margin-top: 15px;">
-            <h1 style="margin: 0; font-size: 24px; font-weight: bold;" id="receipt-total">R$ 0,00</h1>
-        </div>
-    </div>
+    <div id="receipt-canvas"><div style="text-align: center; margin-bottom: 20px;"><img id="receipt-logo" src="" style="width: 60px; margin-bottom: 5px; display: none;"><h2 style="margin: 0; font-size: 18px; font-weight: bold;">ORÇAMENTO</h2><p style="margin: 0; font-size: 12px; color: #666;" id="receipt-store-name">Sua Loja</p><p style="margin: 0; font-size: 12px; color: #666;" id="receipt-date"></p></div><hr style="border: 1px dashed #ccc;"><div id="receipt-items" style="margin: 15px 0;"></div><hr style="border: 1px dashed #ccc;"><div style="text-align: right; margin-top: 15px;"><h1 style="margin: 0; font-size: 24px; font-weight: bold;" id="receipt-total">R$ 0,00</h1></div></div>
 
     <script>
-        // --- CORES DOS TEMAS ---
-        const themes = {
-            purple: { bg: 'bg-purple-700', text: 'text-purple-700', btn: 'bg-purple-600', border: 'border-purple-500', light: 'bg-purple-100', textLight: 'text-purple-600' },
-            blue:   { bg: 'bg-blue-700',   text: 'text-blue-700',   btn: 'bg-blue-600',   border: 'border-blue-500',   light: 'bg-blue-100',   textLight: 'text-blue-600' },
-            green:  { bg: 'bg-emerald-700',text: 'text-emerald-700',btn: 'bg-emerald-600',border: 'border-emerald-500',light: 'bg-emerald-100',textLight: 'text-emerald-600' },
-            pink:   { bg: 'bg-pink-600',   text: 'text-pink-600',   btn: 'bg-pink-500',   border: 'border-pink-500',   light: 'bg-pink-100',   textLight: 'text-pink-600' },
-            slate:  { bg: 'bg-slate-800',  text: 'text-slate-800',  btn: 'bg-slate-700',  border: 'border-slate-600',  light: 'bg-slate-200',  textLight: 'text-slate-700' },
-            orange: { bg: 'bg-orange-600', text: 'text-orange-600', btn: 'bg-orange-500', border: 'border-orange-500', light: 'bg-orange-100', textLight: 'text-orange-600' },
-        };
+        const themes={purple:{bg:'bg-purple-700',text:'text-purple-700',btn:'bg-purple-600',border:'border-purple-500',light:'bg-purple-100',textLight:'text-purple-600'},blue:{bg:'bg-blue-700',text:'text-blue-700',btn:'bg-blue-600',border:'border-blue-500',light:'bg-blue-100',textLight:'text-blue-600'},green:{bg:'bg-emerald-700',text:'text-emerald-700',btn:'bg-emerald-600',border:'border-emerald-500',light:'bg-emerald-100',textLight:'text-emerald-600'},pink:{bg:'bg-pink-600',text:'text-pink-600',btn:'bg-pink-500',border:'border-pink-500',light:'bg-pink-100',textLight:'text-pink-600'},slate:{bg:'bg-slate-800',text:'text-slate-800',btn:'bg-slate-700',border:'border-slate-600',light:'bg-slate-200',textLight:'text-slate-700'},orange:{bg:'bg-orange-600',text:'text-orange-600',btn:'bg-orange-500',border:'border-orange-500',light:'bg-orange-100',textLight:'text-orange-600'}};
+        let catalog=[],cart=[],editingIndex=-1,settings={password:"1234",logo:"",storeName:"Nunes Sublimação",theme:"purple"};
 
-        let catalog = []; let cart = []; let editingIndex = -1;
-        let settings = { password: "1234", logo: "", storeName: "Nunes Sublimação", theme: "purple" };
-
-        function init() {
-            try {
-                const sCat = localStorage.getItem('sublimacao_catalog_v3');
-                if (sCat) catalog = JSON.parse(sCat);
-                if (!Array.isArray(catalog)) catalog = [];
-                const sSet = localStorage.getItem('sublimacao_settings');
-                if (sSet) settings = { ...settings, ...JSON.parse(sSet) }; // Merge para garantir campos novos
-                applySettings();
-            } catch (e) { catalog = []; }
-            renderProductOptions(); renderAdminList();
-        }
-
-        // --- THEME ENGINE ---
-        function applyTheme(colorName) {
-            const t = themes[colorName] || themes.purple;
-            
-            // Navbar
-            const nav = document.getElementById('navbar');
-            nav.className = `${t.bg} text-white p-3 shadow-lg sticky top-0 z-50 flex justify-between items-center transition-colors duration-300`;
-
-            // Elementos Dinâmicos
-            document.querySelectorAll('.theme-text-color').forEach(el => {
-                // Remove todas as cores possíveis e adiciona a nova
-                Object.values(themes).forEach(th => el.classList.remove(th.text));
-                el.classList.add(t.text);
-            });
-
-            document.querySelectorAll('.theme-bg-color').forEach(el => {
-                Object.values(themes).forEach(th => el.classList.remove(th.btn));
-                el.classList.add(t.btn);
-            });
-
-            // Botão Add principal
-            const btnAdd = document.getElementById('btn-add');
-            if(btnAdd) btnAdd.className = `w-full ${t.btn} text-white font-bold h-[45px] rounded-lg shadow flex items-center justify-center gap-2 hover:opacity-90 transition`;
-
-            // Admin Border
-            document.getElementById('admin-panel').className = `bg-white p-5 rounded-xl shadow-md border-t-4 ${t.border}`;
-
-            // Botão Save Settings
-            document.getElementById('btn-save-settings').className = `w-full ${t.btn} text-white text-xs py-2 rounded font-bold`;
-
-            // Re-renderizar listas para aplicar cores nos ícones/badges
-            updateCartUI(); 
-        }
-
-        function previewColor(color) { applyTheme(color); }
-
-        // --- SETTINGS ---
-        function applySettings() {
-            const logo = document.getElementById('app-logo');
-            if(settings.logo) { logo.src = settings.logo; logo.classList.remove('hidden'); }
-            
-            // Aplica Nome
-            document.getElementById('display-store-name').innerHTML = `${settings.storeName}<br><span class="text-xs font-normal opacity-80">Orçamentos</span>`;
-            document.getElementById('settings-name').value = settings.storeName;
-            
-            // Aplica Senha e Tema
-            document.getElementById('settings-password').value = settings.password;
-            document.getElementById('settings-color').value = settings.theme || 'purple';
-            
-            applyTheme(settings.theme || 'purple');
-        }
-
-        function saveSettings() {
-            settings.storeName = document.getElementById('settings-name').value || "Sua Loja";
-            settings.password = document.getElementById('settings-password').value;
-            settings.theme = document.getElementById('settings-color').value;
-            localStorage.setItem('sublimacao_settings', JSON.stringify(settings));
-            applySettings(); alert("Configurações Salvas!");
-        }
-
-        // --- RECEIPT ---
-        function generateReceiptImage(totalVal) {
-            return new Promise((resolve) => {
-                const divItems = document.getElementById('receipt-items'); divItems.innerHTML = '';
-                const rLogo = document.getElementById('receipt-logo');
-                if(settings.logo) { rLogo.src = settings.logo; rLogo.style.display = 'inline-block'; }
-                
-                // NOME DA LOJA NA NOTA
-                document.getElementById('receipt-store-name').innerText = settings.storeName;
-                document.getElementById('receipt-date').innerText = new Date().toLocaleString('pt-BR');
-                
-                cart.forEach(item => { divItems.innerHTML += `<div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px;"><span>${item.qtd}x ${item.prodName} <small>(${item.size})</small></span><span>R$ ${item.total.toFixed(2).replace('.',',')}</span></div>`; });
-                document.getElementById('receipt-total').innerText = `R$ ${totalVal.toFixed(2).replace('.',',')}`;
-                html2canvas(document.getElementById('receipt-canvas')).then(canvas => canvas.toBlob(blob => resolve(blob))).catch(e => resolve(null));
-            });
-        }
+        function init(){try{const c=localStorage.getItem('sublimacao_catalog_v3');if(c)catalog=JSON.parse(c);if(!Array.isArray(catalog))catalog=[];const s=localStorage.getItem('sublimacao_settings');if(s)settings={...settings,...JSON.parse(s)};applySettings()}catch(e){catalog=[]}renderProductOptions();renderAdminList()}
+        function applyTheme(c){const t=themes[c]||themes.purple;document.getElementById('navbar').className=`${t.bg} text-white p-3 shadow-lg sticky top-0 z-50 flex justify-between items-center transition-colors duration-300`;document.querySelectorAll('.theme-text-color').forEach(e=>{Object.values(themes).forEach(h=>e.classList.remove(h.text));e.classList.add(t.text)});document.querySelectorAll('.theme-bg-color').forEach(e=>{Object.values(themes).forEach(h=>e.classList.remove(h.btn));e.classList.add(t.btn)});const b=document.getElementById('btn-add');if(b)b.className=`w-full ${t.btn} text-white font-bold h-[45px] rounded-lg shadow flex items-center justify-center gap-2 hover:opacity-90 transition`;document.getElementById('admin-panel').className=`bg-white p-5 rounded-xl shadow-md border-t-4 ${t.border}`;document.getElementById('btn-save-settings').className=`w-full ${t.btn} text-white text-xs py-2 rounded font-bold`;updateCartUI()}
+        function previewColor(c){applyTheme(c)}
+        function applySettings(){const l=document.getElementById('app-logo');if(settings.logo){l.src=settings.logo;l.classList.remove('hidden')}document.getElementById('display-store-name').innerHTML=`${settings.storeName}<br><span class="text-xs font-normal opacity-80">Orçamentos</span>`;document.getElementById('settings-name').value=settings.storeName;document.getElementById('settings-password').value=settings.password;document.getElementById('settings-color').value=settings.theme||'purple';applyTheme(settings.theme||'purple')}
+        function saveSettings(){settings.storeName=document.getElementById('settings-name').value||"Sua Loja";settings.password=document.getElementById('settings-password').value;settings.theme=document.getElementById('settings-color').value;localStorage.setItem('sublimacao_settings',JSON.stringify(settings));applySettings();alert("Config Salva!")}
         
-        async function finalizeOrder() {
-            if (cart.length === 0) return;
-            const btn = document.getElementById('btn-finish'); const originalBtn = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
-            try {
-                // Título do WhatsApp agora pega o nome da loja
-                let text = `*ORÇAMENTO - ${settings.storeName.toUpperCase()}* 🛍️\n\n`;
-                let grandTotal = 0;
-                cart.forEach((item) => { grandTotal += item.total; text += `${item.qtd}x ${item.prodName} (${item.size})\n`; });
-                text += `\n*TOTAL: R$ ${grandTotal.toFixed(2).replace('.', ',')}*`;
-                
-                let filesArray = [];
-                if (cart.length === 1 && cart[0].image && cart[0].image.startsWith('data:image')) {
-                    const res = await fetch(cart[0].image); const blob = await res.blob();
-                    filesArray = [new File([blob], "produto.jpg", { type: "image/jpeg" })];
-                } else if (cart.length > 1) {
-                    const receiptBlob = await generateReceiptImage(grandTotal);
-                    if(receiptBlob) filesArray = [new File([receiptBlob], "pedido.png", { type: "image/png" })];
-                }
-                if (navigator.share && filesArray.length > 0 && navigator.canShare({ files: filesArray })) { await navigator.share({ files: filesArray, text: text }); } 
-                else { await navigator.share({ text: text }); }
-                setTimeout(() => { resetSystem(); }, 3000);
-            } catch (e) { copyTextToClipboard(text); setTimeout(() => resetSystem(), 3000); } 
-            finally { btn.innerHTML = originalBtn; }
-        }
-
-        // --- RESTANTE DAS FUNÇÕES (IGUAIS, SÓ AJUSTES VISUAIS NAS CORES FIXAS) ---
-        // Funções: loadSizes, calculatePreview, addToCart, etc... mantêm lógica, mas updateCartUI usa tema
+        // --- IMPORTAÇÃO REAL (A MÁGICA v10) ---
+        function exportData(){const d="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({catalog,settings}));const a=document.createElement('a');a.href=d;a.download="backup_loja.json";a.click()}
         
-        function updateCartUI() {
-            const list = document.getElementById('cart-list');
-            const footer = document.getElementById('footer-actions');
-            const section = document.getElementById('cart-section');
-            const totalDisplay = document.getElementById('grand-total');
-            list.innerHTML = ''; let grandTotal = 0;
-            if (cart.length === 0) { section.classList.add('hidden'); footer.classList.add('hidden'); document.body.style.paddingBottom = "0"; return; }
-            section.classList.remove('hidden'); footer.classList.remove('hidden'); document.body.style.paddingBottom = "100px";
-            
-            // Tema atual para os badges
-            const t = themes[settings.theme || 'purple'];
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
 
-            cart.forEach((item, index) => {
-                grandTotal += item.total;
-                list.innerHTML += `
-                    <li class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center scale-in">
-                        <div class="flex items-center gap-3">
-                            <div class="${t.light} rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold ${t.textLight}">${index + 1}</div>
-                            <div>
-                                <div class="font-bold text-gray-800 text-sm">${item.prodName} <span class="font-normal text-gray-500 text-xs">(${item.size})</span></div>
-                                <div class="text-xs text-gray-500">${item.qtd}x R$ ${item.unitPrice.toFixed(2)}</div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-bold text-gray-700 text-sm">R$ ${item.total.toFixed(2).replace('.',',')}</div>
-                            <button onclick="removeFromCart(${index})" class="text-[10px] text-red-400 p-1"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </li>`;
-            });
-            totalDisplay.textContent = `R$ ${grandTotal.toFixed(2).replace('.', ',')}`;
-        }
-        
-        // --- FUNÇÕES REPETIDAS (Necessárias para o funcionamento) ---
-        function loadSizes() {
-            const index = document.getElementById('product-select').value;
-            const sizeSel = document.getElementById('size-select');
-            const imgDiv = document.getElementById('product-image-preview');
-            const sizeContainer = document.getElementById('size-container');
-            sizeSel.innerHTML = ''; sizeContainer.classList.add('hidden'); imgDiv.classList.add('hidden');
-            if (index === "") { calculatePreview(); return; }
-            const prod = catalog[index];
-            if (prod.image) { document.getElementById('img-display').src = prod.image; imgDiv.classList.remove('hidden'); }
-            if (prod.prices && Object.keys(prod.prices).length > 0) {
-                let hasValid = false;
-                for (let [size, price] of Object.entries(prod.prices)) {
-                    if(price !== null && !isNaN(price)) {
-                        let opt = new Option(`${size} - R$ ${parseFloat(price).toFixed(2)}`, price);
-                        opt.dataset.sizeName = size;
-                        sizeSel.add(opt); hasValid = true;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if(data.catalog) {
+                        catalog = data.catalog;
+                        localStorage.setItem('sublimacao_catalog_v3', JSON.stringify(catalog));
                     }
+                    if(data.settings) {
+                        settings = data.settings;
+                        localStorage.setItem('sublimacao_settings', JSON.stringify(settings));
+                    }
+                    
+                    alert("Backup restaurado com sucesso! A página será recarregada.");
+                    location.reload();
+                } catch(err) {
+                    alert("Erro ao ler arquivo de backup. Verifique se é um JSON válido.");
                 }
-                if(hasValid) sizeContainer.classList.remove('hidden');
-            }
-            calculatePreview();
+            };
+            reader.readAsText(file);
         }
-        function calculatePreview() {
-            const index = document.getElementById('product-select').value;
-            const previewLabel = document.getElementById('preview-total');
-            if (index === "") { previewLabel.textContent = "R$ 0,00"; return; }
-            const sizeSel = document.getElementById('size-select');
-            let unitPrice = 0;
-            if (sizeSel.options.length > 0 && sizeSel.selectedIndex !== -1) { unitPrice = parseFloat(sizeSel.value); }
-            const qtd = parseInt(document.getElementById('quantity').value) || 0;
-            const desc = parseFloat(document.getElementById('discount').value) || 0;
-            let total = unitPrice * qtd;
-            if (desc > 0) total -= total * (desc / 100);
-            previewLabel.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-        }
-        function addToCart() {
-            const index = document.getElementById('product-select').value;
-            if (index === "") return alert("Selecione um produto!");
-            const prod = catalog[index];
-            const sizeSel = document.getElementById('size-select');
-            let sizeName = "Único"; let unitPrice = 0;
-            if (prod.prices && Object.keys(prod.prices).length > 0) {
-                 if (sizeSel.selectedIndex === -1) return alert("Selecione um tamanho!");
-                 sizeName = sizeSel.options[sizeSel.selectedIndex].dataset.sizeName;
-                 unitPrice = parseFloat(sizeSel.value);
-            }
-            const qtd = parseInt(document.getElementById('quantity').value) || 1;
-            const desc = parseFloat(document.getElementById('discount').value) || 0;
-            let total = unitPrice * qtd;
-            if(desc > 0) total -= total * (desc/100);
-            cart.push({ prodName: prod.name, size: sizeName, qtd, unitPrice, discount: desc, total, image: prod.image });
-            updateCartUI();
-            document.getElementById('quantity').value = "10";
-            document.getElementById('discount').value = "0";
-            calculatePreview();
-            setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
-        }
-        function removeFromCart(i) { cart.splice(i, 1); updateCartUI(); }
-        function resetSystem() { if(cart.length > 0 && !confirm("Limpar pedido?")) return; cart = []; document.getElementById('product-select').value = ""; loadSizes(); updateCartUI(); calculatePreview(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-        function copyTextToClipboard(text) { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert("Texto copiado!"); }
+
+        function hardReset(){if(confirm("Zerar tudo?")){localStorage.clear();location.reload()}}
+
+        // --- CORE FUNCTIONS (Mantidas) ---
+        function loadSizes(){const i=document.getElementById('product-select').value;const s=document.getElementById('size-select');const d=document.getElementById('product-image-preview');const c=document.getElementById('size-container');s.innerHTML='';c.classList.add('hidden');d.classList.add('hidden');if(i===""){calculatePreview();return}const p=catalog[i];if(p.image){document.getElementById('img-display').src=p.image;d.classList.remove('hidden')}if(p.prices&&Object.keys(p.prices).length>0){let h=false;for(let[z,r]of Object.entries(p.prices)){if(r!==null&&!isNaN(r)){let o=new Option(`${z} - R$ ${parseFloat(r).toFixed(2)}`,r);o.dataset.sizeName=z;s.add(o);h=true}}if(h)c.classList.remove('hidden')}calculatePreview()}
+        function calculatePreview(){const i=document.getElementById('product-select').value;const p=document.getElementById('preview-total');if(i===""){p.textContent="R$ 0,00";return}const s=document.getElementById('size-select');let u=0;if(s.options.length>0&&s.selectedIndex!==-1){u=parseFloat(s.value)}const q=parseInt(document.getElementById('quantity').value)||0;const d=parseFloat(document.getElementById('discount').value)||0;let t=u*q;if(d>0)t-=t*(d/100);p.textContent=`R$ ${t.toFixed(2).replace('.',',')}`}
+        function addToCart(){const i=document.getElementById('product-select').value;if(i==="")return alert("Selecione produto!");const p=catalog[i];const s=document.getElementById('size-select');let z="Único";let u=0;if(p.prices&&Object.keys(p.prices).length>0){if(s.selectedIndex===-1)return alert("Selecione tamanho!");z=s.options[s.selectedIndex].dataset.sizeName;u=parseFloat(s.value)}const q=parseInt(document.getElementById('quantity').value)||1;const d=parseFloat(document.getElementById('discount').value)||0;let t=u*q;if(d>0)t-=t*(d/100);cart.push({prodName:p.name,size:z,qtd:q,unitPrice:u,discount:d,total:t,image:p.image});updateCartUI();document.getElementById('quantity').value="10";document.getElementById('discount').value="0";calculatePreview();setTimeout(()=>window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}),100)}
+        function removeFromCart(i){cart.splice(i,1);updateCartUI()}
+        function resetSystem(){if(cart.length>0&&!confirm("Limpar?"))return;cart=[];document.getElementById('product-select').value="";loadSizes();updateCartUI();calculatePreview();window.scrollTo({top:0,behavior:'smooth'})}
+        function updateCartUI(){const l=document.getElementById('cart-list');const f=document.getElementById('footer-actions');const s=document.getElementById('cart-section');const t=document.getElementById('grand-total');l.innerHTML='';let g=0;if(cart.length===0){s.classList.add('hidden');f.classList.add('hidden');document.body.style.paddingBottom="0";return}s.classList.remove('hidden');f.classList.remove('hidden');document.body.style.paddingBottom="100px";const th=themes[settings.theme||'purple'];cart.forEach((e,i)=>{g+=e.total;l.innerHTML+=`<li class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center scale-in"><div class="flex items-center gap-3"><div class="${th.light} rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold ${th.textLight}">${i+1}</div><div><div class="font-bold text-gray-800 text-sm">${e.prodName} <span class="font-normal text-gray-500 text-xs">(${e.size})</span></div><div class="text-xs text-gray-500">${e.qtd}x R$ ${e.unitPrice.toFixed(2)}</div></div></div><div class="text-right"><div class="font-bold text-gray-700 text-sm">R$ ${e.total.toFixed(2).replace('.',',')}</div><button onclick="removeFromCart(${i})" class="text-[10px] text-red-400 p-1"><i class="fas fa-trash"></i></button></div></li>`});t.textContent=`R$ ${g.toFixed(2).replace('.',',')}`}
+        function generateReceiptImage(v){return new Promise((r)=>{const d=document.getElementById('receipt-items');d.innerHTML='';const l=document.getElementById('receipt-logo');if(settings.logo){l.src=settings.logo;l.style.display='inline-block'}document.getElementById('receipt-store-name').innerText=settings.storeName;document.getElementById('receipt-date').innerText=new Date().toLocaleString('pt-BR');cart.forEach(e=>{d.innerHTML+=`<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:5px;"><span>${e.qtd}x ${e.prodName} <small>(${e.size})</small></span><span>R$ ${e.total.toFixed(2).replace('.',',')}</span></div>`});document.getElementById('receipt-total').innerText=`R$ ${v.toFixed(2).replace('.',',')}`;html2canvas(document.getElementById('receipt-canvas')).then(c=>c.toBlob(b=>r(b))).catch(e=>r(null))})}
+        async function finalizeOrder(){if(cart.length===0)return;const b=document.getElementById('btn-finish');const o=b.innerHTML;b.innerHTML='...';try{let t=`*ORÇAMENTO - ${settings.storeName.toUpperCase()}* 🛍️\n\n`;let g=0;cart.forEach(e=>{g+=e.total;t+=`${e.qtd}x ${e.prodName} (${e.size})\n`});t+=`\n*TOTAL: R$ ${g.toFixed(2).replace('.',',')}*`;let f=[];if(cart.length===1&&cart[0].image&&cart[0].image.startsWith('data:image')){const r=await fetch(cart[0].image);const bl=await r.blob();f=[new File([bl],"prod.jpg",{type:"image/jpeg"})]}else if(cart.length>1){const rb=await generateReceiptImage(g);if(rb)f=[new File([rb],"ped.png",{type:"image/png"})]}if(navigator.share&&f.length>0&&navigator.canShare({files:f})){await navigator.share({files:f,text:t})}else{await navigator.share({text:t})}setTimeout(()=>{resetSystem()},3000)}catch(e){copyTextToClipboard(t);setTimeout(()=>{resetSystem()},3000)}finally{b.innerHTML=o}}
+        function copyTextToClipboard(t){const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);alert("Texto copiado!")}
         
-        document.getElementById('settings-logo-input').addEventListener('change', function(e) { processImage(e.target.files[0], 150, (b64) => { settings.logo = b64; }); });
-        document.getElementById('new-prod-file').addEventListener('change', function(e) { processImage(e.target.files[0], 500, (b64) => { document.getElementById('new-prod-img-base64').value = b64; document.getElementById('form-img-preview').src = b64; document.getElementById('form-img-preview').classList.remove('hidden'); }); });
+        // ADMIN & IMAGE
+        document.getElementById('settings-logo-input').addEventListener('change',function(e){processImage(e.target.files[0],150,(b)=>{settings.logo=b})});
+        document.getElementById('new-prod-file').addEventListener('change',function(e){processImage(e.target.files[0],500,(b)=>{document.getElementById('new-prod-img-base64').value=b;document.getElementById('form-img-preview').src=b;document.getElementById('form-img-preview').classList.remove('hidden')})});
         function processImage(f,mw,cb){if(!f)return;const r=new FileReader();r.onload=(e)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');const x=c.getContext('2d');let w=i.width,h=i.height;if(w>h){if(w>mw){h*=mw/w;w=mw}}else{if(h>mw){w*=mw/h;h=mw}}c.width=w;c.height=h;x.drawImage(i,0,0,w,h);cb(c.toDataURL('image/jpeg',0.7))};i.src=e.target.result};r.readAsDataURL(f)}
         
-        function loadProductForEdit(index) {
-            const prod = catalog[index]; editingIndex = index;
-            document.getElementById('new-prod-name').value = prod.name;
-            document.getElementById('new-prod-img-base64').value = prod.image || "";
-            let priceText = ""; if (prod.prices) { for (let [size, price] of Object.entries(prod.prices)) { priceText += `${size}=${price.toFixed(2)}\n`; } }
-            document.getElementById('new-prod-sizes').value = priceText.trim();
-            document.getElementById('form-title').textContent = "Editar Produto";
-            const btnSave = document.getElementById('btn-save-prod'); btnSave.textContent = "Atualizar Produto";
-            document.getElementById('btn-cancel-edit').classList.remove('hidden');
-            const imgPrev = document.getElementById('form-img-preview');
-            if (prod.image) { imgPrev.src = prod.image; imgPrev.classList.remove('hidden'); } else { imgPrev.classList.add('hidden'); }
-            document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
-        }
-        function cancelEdit() {
-            editingIndex = -1;
-            document.getElementById('new-prod-name').value = ''; document.getElementById('new-prod-sizes').value = ''; document.getElementById('new-prod-img-base64').value = ''; document.getElementById('new-prod-file').value = ''; document.getElementById('form-img-preview').classList.add('hidden');
-            document.getElementById('form-title').textContent = "Novo Produto";
-            const btnSave = document.getElementById('btn-save-prod'); btnSave.textContent = "Salvar Produto";
-            document.getElementById('btn-cancel-edit').classList.add('hidden');
-        }
-        function saveProduct() {
-            const name = document.getElementById('new-prod-name').value; const sizes = document.getElementById('new-prod-sizes').value; const img = document.getElementById('new-prod-img-base64').value;
-            if(!name || !sizes) return alert("Preencha o nome e os preços!");
-            const prices = {}; sizes.split('\n').forEach(l => { if(l.includes('=')) { let [k,v] = l.split('='); let val = parseFloat(v.replace('R$','').trim().replace(',','.')); if(!isNaN(val)) prices[k.trim()] = val; } });
-            const newProdData = { id: editingIndex >= 0 ? catalog[editingIndex].id : Date.now(), name: name, prices: prices, image: img };
-            try { if (editingIndex >= 0) { catalog[editingIndex] = newProdData; alert("Produto atualizado!"); } else { catalog.push(newProdData); alert("Produto criado!"); } localStorage.setItem('sublimacao_catalog_v3', JSON.stringify(catalog)); renderAdminList(); renderProductOptions(); cancelEdit(); } catch(e) { alert("Memória cheia!"); }
-        }
-        function deleteProduct(i) { if(confirm("Apagar?")) { catalog.splice(i,1); localStorage.setItem('sublimacao_catalog_v3', JSON.stringify(catalog)); renderAdminList(); renderProductOptions(); cancelEdit(); } }
-        function renderAdminList() { const l=document.getElementById('product-list');l.innerHTML=''; catalog.forEach((p,i)=>{ l.innerHTML+=`<li class="flex justify-between items-center py-3 border-b text-sm"><div class="flex items-center gap-3">${p.image ? `<img src="${p.image}" class="w-10 h-10 rounded object-cover border">` : '<div class="w-10 h-10 bg-gray-200 rounded"></div>'}<span class="font-medium">${p.name}</span></div><div class="flex gap-2"><button onclick="loadProductForEdit(${i})" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button><button onclick="deleteProduct(${i})" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button></div></li>` }); }
-        function renderProductOptions() { const s=document.getElementById('product-select');s.innerHTML='<option value="">Selecione...</option>';catalog.forEach((p,i)=>s.add(new Option(p.name, i))); }
-        function toggleAdmin() { const a=document.getElementById('admin-view');const s=document.getElementById('sales-view');if(a.classList.contains('hidden')){if(prompt("Senha:")===settings.password){s.classList.add('hidden');a.classList.remove('hidden')}}else{a.classList.add('hidden');s.classList.remove('hidden')}}
-        function exportData() { const d="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({catalog,settings}));const a=document.createElement('a');a.href=d;a.download="backup.json";a.click(); }
-        function importData() { const j=prompt("Cole JSON:");if(j){try{const d=JSON.parse(j);if(d.catalog)localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(d.catalog));if(d.settings)localStorage.setItem('sublimacao_settings',JSON.stringify(d.settings));location.reload()}catch(e){alert("Erro")}} }
+        function loadProductForEdit(i){const p=catalog[i];editingIndex=i;document.getElementById('new-prod-name').value=p.name;document.getElementById('new-prod-img-base64').value=p.image||"";let t="";if(p.prices){for(let[z,r]of Object.entries(p.prices)){t+=`${z}=${r.toFixed(2)}\n`}}document.getElementById('new-prod-sizes').value=t.trim();document.getElementById('form-title').textContent="Editar";const b=document.getElementById('btn-save-prod');b.textContent="Atualizar";document.getElementById('btn-cancel-edit').classList.remove('hidden');const ip=document.getElementById('form-img-preview');if(p.image){ip.src=p.image;ip.classList.remove('hidden')}else{ip.classList.add('hidden')}document.getElementById('admin-panel').scrollIntoView({behavior:'smooth'})}
+        function cancelEdit(){editingIndex=-1;document.getElementById('new-prod-name').value='';document.getElementById('new-prod-sizes').value='';document.getElementById('new-prod-img-base64').value='';document.getElementById('new-prod-file').value='';document.getElementById('form-img-preview').classList.add('hidden');document.getElementById('form-title').textContent="Novo";const b=document.getElementById('btn-save-prod');b.textContent="Salvar";document.getElementById('btn-cancel-edit').classList.add('hidden')}
+        function saveProduct(){const n=document.getElementById('new-prod-name').value;const s=document.getElementById('new-prod-sizes').value;const i=document.getElementById('new-prod-img-base64').value;if(!n||!s)return alert("Preencha!");const p={};s.split('\n').forEach(l=>{if(l.includes('=')){let [k,v]=l.split('=');let val=parseFloat(v.replace('R$','').trim().replace(',','.'));if(!isNaN(val))p[k.trim()]=val}});const d={id:editingIndex>=0?catalog[editingIndex].id:Date.now(),name:n,prices:p,image:i};try{if(editingIndex>=0){catalog[editingIndex]=d;alert("Atualizado!")}else{catalog.push(d);alert("Criado!")}localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(catalog));renderAdminList();renderProductOptions();cancelEdit()}catch(e){alert("Memória!")}}
+        function deleteProduct(i){if(confirm("Apagar?")){catalog.splice(i,1);localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(catalog));renderAdminList();renderProductOptions();cancelEdit()}}
+        function renderAdminList(){const l=document.getElementById('product-list');l.innerHTML='';catalog.forEach((p,i)=>{l.innerHTML+=`<li class="flex justify-between items-center py-3 border-b text-sm"><div class="flex items-center gap-3">${p.image?`<img src="${p.image}" class="w-10 h-10 rounded object-cover border">`:'<div class="w-10 h-10 bg-gray-200 rounded"></div>'}<span class="font-medium">${p.name}</span></div><div class="flex gap-2"><button onclick="loadProductForEdit(${i})" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button><button onclick="deleteProduct(${i})" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button></div></li>`})}
+        function renderProductOptions(){const s=document.getElementById('product-select');s.innerHTML='<option value="">Selecione...</option>';catalog.forEach((p,i)=>s.add(new Option(p.name,i)))}
+        function toggleAdmin(){const a=document.getElementById('admin-view');const s=document.getElementById('sales-view');if(a.classList.contains('hidden')){if(prompt("Senha:")===settings.password){s.classList.add('hidden');a.classList.remove('hidden')}}else{a.classList.add('hidden');s.classList.remove('hidden')}}
 
         init();
     </script>
