@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nunes Sublimação v8 (Editável)</title>
+    <title>Gerador de Orçamentos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        // Configuração do Tailwind para aceitar cores dinâmicas via JS se necessário
+        tailwind.config = { theme: { extend: { colors: { primary: '#7e22ce' } } } }
+    </script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; }
         .hidden { display: none; }
@@ -19,18 +23,20 @@
             position: absolute; top: -9999px; left: -9999px;
             font-family: 'Courier New', Courier, monospace; border: 1px solid #ddd;
         }
+        
+        /* Classes utilitárias para temas dinâmicos via Style Tag */
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen pb-32">
 
-    <nav class="bg-purple-700 text-white p-3 shadow-lg sticky top-0 z-50 flex justify-between items-center">
+    <nav id="navbar" class="bg-purple-700 text-white p-3 shadow-lg sticky top-0 z-50 flex justify-between items-center transition-colors duration-300">
         <div class="flex items-center gap-3">
             <img id="app-logo" src="" class="hidden w-10 h-10 rounded-full bg-white object-contain p-0.5 border-2 border-white">
-            <h1 class="text-lg font-bold leading-tight">Nunes<br><span class="text-xs font-normal opacity-80">Sublimação</span></h1>
+            <h1 class="text-lg font-bold leading-tight" id="display-store-name">Sua Loja<br><span class="text-xs font-normal opacity-80">Orçamentos</span></h1>
         </div>
         <div class="flex gap-2">
             <button onclick="resetSystem()" class="text-xs bg-red-500/80 hover:bg-red-600 px-3 py-1.5 rounded text-white border border-red-400 backdrop-blur-sm">
-                <i class="fas fa-trash"></i> Limpar
+                <i class="fas fa-trash"></i>
             </button>
             <button onclick="toggleAdmin()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded border border-white/40 backdrop-blur-sm">
                 <i class="fas fa-cog"></i>
@@ -71,12 +77,12 @@
                     </div>
                 </div>
 
-                <div class="flex justify-between items-center bg-purple-50 p-2 rounded mb-3 border border-purple-100">
-                    <span class="text-xs text-purple-600 font-bold uppercase">Valor Item:</span>
-                    <span id="preview-total" class="text-xl font-bold text-purple-700">R$ 0,00</span>
+                <div class="flex justify-between items-center bg-gray-50 p-2 rounded mb-3 border border-gray-200">
+                    <span class="text-xs text-gray-600 font-bold uppercase">Valor Item:</span>
+                    <span id="preview-total" class="text-xl font-bold theme-text-color">R$ 0,00</span>
                 </div>
 
-                <button onclick="addToCart()" class="w-full bg-purple-600 active:bg-purple-800 text-white font-bold h-[45px] rounded-lg shadow flex items-center justify-center gap-2 hover:bg-purple-700 transition">
+                <button id="btn-add" onclick="addToCart()" class="w-full theme-bg-color text-white font-bold h-[45px] rounded-lg shadow flex items-center justify-center gap-2 hover:opacity-90 transition">
                     <i class="fas fa-cart-plus"></i> Adicionar
                 </button>
             </div>
@@ -101,39 +107,55 @@
         </div>
 
         <div id="admin-view" class="hidden">
-            <div class="bg-white p-5 rounded-xl shadow-md border-t-4 border-purple-500">
+            <div class="bg-white p-5 rounded-xl shadow-md border-t-4 border-gray-500" id="admin-panel">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold text-gray-800">Admin</h2>
                     <button onclick="toggleAdmin()" class="text-gray-400 hover:text-red-500 px-2 text-xl">&times;</button>
                 </div>
 
-                <details class="mb-6 bg-purple-50 p-3 rounded-lg border border-purple-100">
-                    <summary class="text-purple-700 font-bold cursor-pointer text-sm">🛠️ Configurações</summary>
+                <details class="mb-6 bg-gray-50 p-3 rounded-lg border border-gray-200" open>
+                    <summary class="font-bold cursor-pointer text-sm theme-text-color">🛠️ Personalizar Marca</summary>
                     <div class="mt-3 space-y-3">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Nome da Empresa</label>
+                            <input type="text" id="settings-name" placeholder="Ex: Nunes Sublimação" class="w-full p-2 text-sm border rounded">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Cor do Sistema</label>
+                            <select id="settings-color" class="w-full p-2 text-sm border rounded" onchange="previewColor(this.value)">
+                                <option value="purple">Roxo (Padrão)</option>
+                                <option value="blue">Azul Profissional</option>
+                                <option value="green">Verde Natureza</option>
+                                <option value="pink">Rosa Confeitaria</option>
+                                <option value="slate">Preto Minimalista</option>
+                                <option value="orange">Laranja Energia</option>
+                            </select>
+                        </div>
+
                         <div><label class="block text-xs text-gray-500 mb-1">Logo</label><input type="file" id="settings-logo-input" accept="image/*" class="text-xs w-full"></div>
-                        <div><label class="block text-xs text-gray-500 mb-1">Senha</label><input type="text" id="settings-password" class="w-full p-2 text-sm border rounded"></div>
-                        <button onclick="saveSettings()" class="w-full bg-purple-600 text-white text-xs py-2 rounded font-bold">Salvar Config</button>
+                        <div><label class="block text-xs text-gray-500 mb-1">Senha Admin</label><input type="text" id="settings-password" class="w-full p-2 text-sm border rounded"></div>
+                        
+                        <button onclick="saveSettings()" id="btn-save-settings" class="w-full theme-bg-color text-white text-xs py-2 rounded font-bold">Salvar Configurações</button>
                     </div>
                 </details>
 
                 <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200" id="product-form-container">
                     <h3 class="font-bold text-sm text-gray-600 mb-3 flex justify-between">
                         <span id="form-title">Novo Produto</span>
-                        <button id="btn-cancel-edit" onclick="cancelEdit()" class="text-xs text-red-500 hidden">Cancelar Edição</button>
+                        <button id="btn-cancel-edit" onclick="cancelEdit()" class="text-xs text-red-500 hidden">Cancelar</button>
                     </h3>
                     
-                    <input type="text" id="new-prod-name" placeholder="Nome do Produto" class="w-full p-3 border rounded-lg mb-3 focus:ring-2 focus:ring-purple-500 outline-none">
-                    
+                    <input type="text" id="new-prod-name" placeholder="Nome do Produto" class="w-full p-3 border rounded-lg mb-3">
                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center bg-white mb-3 relative" onclick="document.getElementById('new-prod-file').click()">
                         <i class="fas fa-camera text-gray-400"></i> <span class="text-xs text-gray-500">Foto</span>
                         <input type="file" id="new-prod-file" accept="image/*" class="hidden">
                         <img id="form-img-preview" class="hidden h-16 w-16 object-cover absolute right-2 top-1 rounded border">
                     </div>
                     <input type="hidden" id="new-prod-img-base64">
-
-                    <textarea id="new-prod-sizes" rows="3" placeholder="Preços (Ex: P=10.00)" class="w-full p-3 border rounded-lg mb-3 font-mono text-sm focus:ring-2 focus:ring-purple-500 outline-none"></textarea>
+                    <textarea id="new-prod-sizes" rows="3" placeholder="Preços (Ex: P=10.00)" class="w-full p-3 border rounded-lg mb-3 font-mono text-sm"></textarea>
                     
-                    <button id="btn-save-prod" onclick="saveProduct()" class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg shadow hover:bg-gray-900 transition">Salvar Produto</button>
+                    <button id="btn-save-prod" onclick="saveProduct()" class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg shadow">Salvar Produto</button>
                 </div>
 
                 <h3 class="font-bold text-gray-600 text-sm mb-2">Lista de Produtos</h3>
@@ -151,7 +173,7 @@
         <div style="text-align: center; margin-bottom: 20px;">
             <img id="receipt-logo" src="" style="width: 60px; margin-bottom: 5px; display: none;">
             <h2 style="margin: 0; font-size: 18px; font-weight: bold;">ORÇAMENTO</h2>
-            <p style="margin: 0; font-size: 12px; color: #666;">Nunes Sublimação</p>
+            <p style="margin: 0; font-size: 12px; color: #666;" id="receipt-store-name">Sua Loja</p>
             <p style="margin: 0; font-size: 12px; color: #666;" id="receipt-date"></p>
         </div>
         <hr style="border: 1px dashed #ccc;">
@@ -163,8 +185,18 @@
     </div>
 
     <script>
-        let catalog = []; let cart = []; let settings = { password: "1234", logo: "" };
-        let editingIndex = -1; // -1 significa "criando novo", >=0 significa "editando o índice X"
+        // --- CORES DOS TEMAS ---
+        const themes = {
+            purple: { bg: 'bg-purple-700', text: 'text-purple-700', btn: 'bg-purple-600', border: 'border-purple-500', light: 'bg-purple-100', textLight: 'text-purple-600' },
+            blue:   { bg: 'bg-blue-700',   text: 'text-blue-700',   btn: 'bg-blue-600',   border: 'border-blue-500',   light: 'bg-blue-100',   textLight: 'text-blue-600' },
+            green:  { bg: 'bg-emerald-700',text: 'text-emerald-700',btn: 'bg-emerald-600',border: 'border-emerald-500',light: 'bg-emerald-100',textLight: 'text-emerald-600' },
+            pink:   { bg: 'bg-pink-600',   text: 'text-pink-600',   btn: 'bg-pink-500',   border: 'border-pink-500',   light: 'bg-pink-100',   textLight: 'text-pink-600' },
+            slate:  { bg: 'bg-slate-800',  text: 'text-slate-800',  btn: 'bg-slate-700',  border: 'border-slate-600',  light: 'bg-slate-200',  textLight: 'text-slate-700' },
+            orange: { bg: 'bg-orange-600', text: 'text-orange-600', btn: 'bg-orange-500', border: 'border-orange-500', light: 'bg-orange-100', textLight: 'text-orange-600' },
+        };
+
+        let catalog = []; let cart = []; let editingIndex = -1;
+        let settings = { password: "1234", logo: "", storeName: "Nunes Sublimação", theme: "purple" };
 
         function init() {
             try {
@@ -172,187 +204,100 @@
                 if (sCat) catalog = JSON.parse(sCat);
                 if (!Array.isArray(catalog)) catalog = [];
                 const sSet = localStorage.getItem('sublimacao_settings');
-                if (sSet) settings = JSON.parse(sSet);
+                if (sSet) settings = { ...settings, ...JSON.parse(sSet) }; // Merge para garantir campos novos
                 applySettings();
             } catch (e) { catalog = []; }
             renderProductOptions(); renderAdminList();
         }
 
-        // --- EDITAR PRODUTO (NOVO) ---
-        function loadProductForEdit(index) {
-            const prod = catalog[index];
-            editingIndex = index;
-
-            // Preenche o formulário
-            document.getElementById('new-prod-name').value = prod.name;
-            document.getElementById('new-prod-img-base64').value = prod.image || "";
+        // --- THEME ENGINE ---
+        function applyTheme(colorName) {
+            const t = themes[colorName] || themes.purple;
             
-            // Converte objeto de preços de volta para texto (Key=Value)
-            let priceText = "";
-            if (prod.prices) {
-                for (let [size, price] of Object.entries(prod.prices)) {
-                    priceText += `${size}=${price.toFixed(2)}\n`;
-                }
-            }
-            document.getElementById('new-prod-sizes').value = priceText.trim();
+            // Navbar
+            const nav = document.getElementById('navbar');
+            nav.className = `${t.bg} text-white p-3 shadow-lg sticky top-0 z-50 flex justify-between items-center transition-colors duration-300`;
 
-            // Ajusta UI
-            document.getElementById('form-title').textContent = "Editar Produto";
-            document.getElementById('form-title').className = "text-purple-600 font-bold";
-            const btnSave = document.getElementById('btn-save-prod');
-            btnSave.textContent = "Atualizar Produto";
-            btnSave.className = "w-full bg-purple-600 text-white font-bold py-3 rounded-lg shadow hover:bg-purple-700 transition";
-            
-            document.getElementById('btn-cancel-edit').classList.remove('hidden');
-
-            // Preview da Imagem no Form
-            const imgPrev = document.getElementById('form-img-preview');
-            if (prod.image) {
-                imgPrev.src = prod.image;
-                imgPrev.classList.remove('hidden');
-            } else {
-                imgPrev.classList.add('hidden');
-            }
-
-            // Scroll suave para o form
-            document.getElementById('admin-view').scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function cancelEdit() {
-            editingIndex = -1;
-            document.getElementById('new-prod-name').value = '';
-            document.getElementById('new-prod-sizes').value = '';
-            document.getElementById('new-prod-img-base64').value = '';
-            document.getElementById('new-prod-file').value = '';
-            document.getElementById('form-img-preview').classList.add('hidden');
-
-            // Restaura UI
-            document.getElementById('form-title').textContent = "Novo Produto";
-            document.getElementById('form-title').className = "";
-            const btnSave = document.getElementById('btn-save-prod');
-            btnSave.textContent = "Salvar Produto";
-            btnSave.className = "w-full bg-gray-800 text-white font-bold py-3 rounded-lg shadow hover:bg-gray-900 transition";
-            document.getElementById('btn-cancel-edit').classList.add('hidden');
-        }
-
-        // --- SALVAR (Com lógica de Edição) ---
-        function saveProduct() {
-            const name = document.getElementById('new-prod-name').value;
-            const sizes = document.getElementById('new-prod-sizes').value;
-            const img = document.getElementById('new-prod-img-base64').value;
-
-            if(!name || !sizes) return alert("Preencha o nome e os preços!");
-
-            const prices = {};
-            sizes.split('\n').forEach(l => {
-                if(l.includes('=')) {
-                    let [k,v] = l.split('=');
-                    let val = parseFloat(v.replace('R$','').trim().replace(',','.'));
-                    if(!isNaN(val)) prices[k.trim()] = val;
-                }
+            // Elementos Dinâmicos
+            document.querySelectorAll('.theme-text-color').forEach(el => {
+                // Remove todas as cores possíveis e adiciona a nova
+                Object.values(themes).forEach(th => el.classList.remove(th.text));
+                el.classList.add(t.text);
             });
 
-            const newProdData = {
-                id: editingIndex >= 0 ? catalog[editingIndex].id : Date.now(), // Mantém ID se editando
-                name: name,
-                prices: prices,
-                image: img
-            };
-
-            try {
-                if (editingIndex >= 0) {
-                    // ATUALIZAR EXISTENTE
-                    catalog[editingIndex] = newProdData;
-                    alert("Produto atualizado!");
-                } else {
-                    // CRIAR NOVO
-                    catalog.push(newProdData);
-                    alert("Produto criado!");
-                }
-
-                localStorage.setItem('sublimacao_catalog_v3', JSON.stringify(catalog));
-                renderAdminList(); 
-                renderProductOptions();
-                cancelEdit(); // Reseta o form
-
-            } catch(e) {
-                alert("Memória cheia! Tente usar imagens menores.");
-            }
-        }
-
-        // --- CÁLCULO PREVIEW ---
-        function calculatePreview() {
-            const index = document.getElementById('product-select').value;
-            const previewLabel = document.getElementById('preview-total');
-            if (index === "") { previewLabel.textContent = "R$ 0,00"; return; }
-            const sizeSel = document.getElementById('size-select');
-            let unitPrice = 0;
-            if (sizeSel.options.length > 0 && sizeSel.selectedIndex !== -1) { unitPrice = parseFloat(sizeSel.value); }
-            const qtd = parseInt(document.getElementById('quantity').value) || 0;
-            const desc = parseFloat(document.getElementById('discount').value) || 0;
-            let total = unitPrice * qtd;
-            if (desc > 0) total -= total * (desc / 100);
-            previewLabel.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-        }
-
-        // --- CARRINHO ---
-        function addToCart() {
-            const index = document.getElementById('product-select').value;
-            if (index === "") return alert("Selecione um produto!");
-            const prod = catalog[index];
-            const sizeSel = document.getElementById('size-select');
-            let sizeName = "Único"; let unitPrice = 0;
-            if (prod.prices && Object.keys(prod.prices).length > 0) {
-                 if (sizeSel.selectedIndex === -1) return alert("Selecione um tamanho!");
-                 sizeName = sizeSel.options[sizeSel.selectedIndex].dataset.sizeName;
-                 unitPrice = parseFloat(sizeSel.value);
-            }
-            const qtd = parseInt(document.getElementById('quantity').value) || 1;
-            const desc = parseFloat(document.getElementById('discount').value) || 0;
-            let total = unitPrice * qtd;
-            if(desc > 0) total -= total * (desc/100);
-            cart.push({ prodName: prod.name, size: sizeName, qtd, unitPrice, discount: desc, total, image: prod.image });
-            updateCartUI();
-            document.getElementById('quantity').value = "10";
-            document.getElementById('discount').value = "0";
-            calculatePreview();
-            setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
-        }
-
-        function removeFromCart(i) { cart.splice(i, 1); updateCartUI(); }
-        function resetSystem() {
-            if(cart.length > 0 && !confirm("Limpar pedido?")) return;
-            cart = []; document.getElementById('product-select').value = "";
-            loadSizes(); updateCartUI(); calculatePreview();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function updateCartUI() {
-            const list = document.getElementById('cart-list');
-            const footer = document.getElementById('footer-actions');
-            const section = document.getElementById('cart-section');
-            const totalDisplay = document.getElementById('grand-total');
-            list.innerHTML = ''; let grandTotal = 0;
-            if (cart.length === 0) { section.classList.add('hidden'); footer.classList.add('hidden'); document.body.style.paddingBottom = "0"; return; }
-            section.classList.remove('hidden'); footer.classList.remove('hidden'); document.body.style.paddingBottom = "100px";
-            cart.forEach((item, index) => {
-                grandTotal += item.total;
-                list.innerHTML += `<li class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center scale-in"><div class="flex items-center gap-3"><div class="bg-purple-100 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold text-purple-600">${index + 1}</div><div><div class="font-bold text-gray-800 text-sm">${item.prodName} <span class="font-normal text-gray-500 text-xs">(${item.size})</span></div><div class="text-xs text-gray-500">${item.qtd}x R$ ${item.unitPrice.toFixed(2)}</div></div></div><div class="text-right"><div class="font-bold text-gray-700 text-sm">R$ ${item.total.toFixed(2).replace('.',',')}</div><button onclick="removeFromCart(${index})" class="text-[10px] text-red-400 p-1"><i class="fas fa-trash"></i></button></div></li>`;
+            document.querySelectorAll('.theme-bg-color').forEach(el => {
+                Object.values(themes).forEach(th => el.classList.remove(th.btn));
+                el.classList.add(t.btn);
             });
-            totalDisplay.textContent = `R$ ${grandTotal.toFixed(2).replace('.', ',')}`;
+
+            // Botão Add principal
+            const btnAdd = document.getElementById('btn-add');
+            if(btnAdd) btnAdd.className = `w-full ${t.btn} text-white font-bold h-[45px] rounded-lg shadow flex items-center justify-center gap-2 hover:opacity-90 transition`;
+
+            // Admin Border
+            document.getElementById('admin-panel').className = `bg-white p-5 rounded-xl shadow-md border-t-4 ${t.border}`;
+
+            // Botão Save Settings
+            document.getElementById('btn-save-settings').className = `w-full ${t.btn} text-white text-xs py-2 rounded font-bold`;
+
+            // Re-renderizar listas para aplicar cores nos ícones/badges
+            updateCartUI(); 
         }
 
-        // --- FINALIZAÇÃO ---
+        function previewColor(color) { applyTheme(color); }
+
+        // --- SETTINGS ---
+        function applySettings() {
+            const logo = document.getElementById('app-logo');
+            if(settings.logo) { logo.src = settings.logo; logo.classList.remove('hidden'); }
+            
+            // Aplica Nome
+            document.getElementById('display-store-name').innerHTML = `${settings.storeName}<br><span class="text-xs font-normal opacity-80">Orçamentos</span>`;
+            document.getElementById('settings-name').value = settings.storeName;
+            
+            // Aplica Senha e Tema
+            document.getElementById('settings-password').value = settings.password;
+            document.getElementById('settings-color').value = settings.theme || 'purple';
+            
+            applyTheme(settings.theme || 'purple');
+        }
+
+        function saveSettings() {
+            settings.storeName = document.getElementById('settings-name').value || "Sua Loja";
+            settings.password = document.getElementById('settings-password').value;
+            settings.theme = document.getElementById('settings-color').value;
+            localStorage.setItem('sublimacao_settings', JSON.stringify(settings));
+            applySettings(); alert("Configurações Salvas!");
+        }
+
+        // --- RECEIPT ---
+        function generateReceiptImage(totalVal) {
+            return new Promise((resolve) => {
+                const divItems = document.getElementById('receipt-items'); divItems.innerHTML = '';
+                const rLogo = document.getElementById('receipt-logo');
+                if(settings.logo) { rLogo.src = settings.logo; rLogo.style.display = 'inline-block'; }
+                
+                // NOME DA LOJA NA NOTA
+                document.getElementById('receipt-store-name').innerText = settings.storeName;
+                document.getElementById('receipt-date').innerText = new Date().toLocaleString('pt-BR');
+                
+                cart.forEach(item => { divItems.innerHTML += `<div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px;"><span>${item.qtd}x ${item.prodName} <small>(${item.size})</small></span><span>R$ ${item.total.toFixed(2).replace('.',',')}</span></div>`; });
+                document.getElementById('receipt-total').innerText = `R$ ${totalVal.toFixed(2).replace('.',',')}`;
+                html2canvas(document.getElementById('receipt-canvas')).then(canvas => canvas.toBlob(blob => resolve(blob))).catch(e => resolve(null));
+            });
+        }
+        
         async function finalizeOrder() {
             if (cart.length === 0) return;
-            const btn = document.getElementById('btn-finish');
-            const originalBtn = btn.innerHTML;
+            const btn = document.getElementById('btn-finish'); const originalBtn = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
             try {
-                let text = `*ORÇAMENTO - NUNES SUBLIMAÇÃO* 🛍️\n\n`;
+                // Título do WhatsApp agora pega o nome da loja
+                let text = `*ORÇAMENTO - ${settings.storeName.toUpperCase()}* 🛍️\n\n`;
                 let grandTotal = 0;
                 cart.forEach((item) => { grandTotal += item.total; text += `${item.qtd}x ${item.prodName} (${item.size})\n`; });
                 text += `\n*TOTAL: R$ ${grandTotal.toFixed(2).replace('.', ',')}*`;
+                
                 let filesArray = [];
                 if (cart.length === 1 && cart[0].image && cart[0].image.startsWith('data:image')) {
                     const res = await fetch(cart[0].image); const blob = await res.blob();
@@ -368,20 +313,42 @@
             finally { btn.innerHTML = originalBtn; }
         }
 
-        function generateReceiptImage(totalVal) {
-            return new Promise((resolve) => {
-                const divItems = document.getElementById('receipt-items'); divItems.innerHTML = '';
-                const rLogo = document.getElementById('receipt-logo');
-                if(settings.logo) { rLogo.src = settings.logo; rLogo.style.display = 'inline-block'; }
-                document.getElementById('receipt-date').innerText = new Date().toLocaleString('pt-BR');
-                cart.forEach(item => { divItems.innerHTML += `<div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px;"><span>${item.qtd}x ${item.prodName} <small>(${item.size})</small></span><span>R$ ${item.total.toFixed(2).replace('.',',')}</span></div>`; });
-                document.getElementById('receipt-total').innerText = `R$ ${totalVal.toFixed(2).replace('.',',')}`;
-                html2canvas(document.getElementById('receipt-canvas')).then(canvas => canvas.toBlob(blob => resolve(blob))).catch(e => resolve(null));
-            });
-        }
-        function copyTextToClipboard(text) { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert("Texto copiado!"); }
+        // --- RESTANTE DAS FUNÇÕES (IGUAIS, SÓ AJUSTES VISUAIS NAS CORES FIXAS) ---
+        // Funções: loadSizes, calculatePreview, addToCart, etc... mantêm lógica, mas updateCartUI usa tema
+        
+        function updateCartUI() {
+            const list = document.getElementById('cart-list');
+            const footer = document.getElementById('footer-actions');
+            const section = document.getElementById('cart-section');
+            const totalDisplay = document.getElementById('grand-total');
+            list.innerHTML = ''; let grandTotal = 0;
+            if (cart.length === 0) { section.classList.add('hidden'); footer.classList.add('hidden'); document.body.style.paddingBottom = "0"; return; }
+            section.classList.remove('hidden'); footer.classList.remove('hidden'); document.body.style.paddingBottom = "100px";
+            
+            // Tema atual para os badges
+            const t = themes[settings.theme || 'purple'];
 
-        // --- AUXILIARES ---
+            cart.forEach((item, index) => {
+                grandTotal += item.total;
+                list.innerHTML += `
+                    <li class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center scale-in">
+                        <div class="flex items-center gap-3">
+                            <div class="${t.light} rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold ${t.textLight}">${index + 1}</div>
+                            <div>
+                                <div class="font-bold text-gray-800 text-sm">${item.prodName} <span class="font-normal text-gray-500 text-xs">(${item.size})</span></div>
+                                <div class="text-xs text-gray-500">${item.qtd}x R$ ${item.unitPrice.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-gray-700 text-sm">R$ ${item.total.toFixed(2).replace('.',',')}</div>
+                            <button onclick="removeFromCart(${index})" class="text-[10px] text-red-400 p-1"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>`;
+            });
+            totalDisplay.textContent = `R$ ${grandTotal.toFixed(2).replace('.', ',')}`;
+        }
+        
+        // --- FUNÇÕES REPETIDAS (Necessárias para o funcionamento) ---
         function loadSizes() {
             const index = document.getElementById('product-select').value;
             const sizeSel = document.getElementById('size-select');
@@ -404,36 +371,78 @@
             }
             calculatePreview();
         }
-
-        function applySettings() { const logo = document.getElementById('app-logo'); if(settings.logo) { logo.src = settings.logo; logo.classList.remove('hidden'); } document.getElementById('settings-password').value = settings.password; }
+        function calculatePreview() {
+            const index = document.getElementById('product-select').value;
+            const previewLabel = document.getElementById('preview-total');
+            if (index === "") { previewLabel.textContent = "R$ 0,00"; return; }
+            const sizeSel = document.getElementById('size-select');
+            let unitPrice = 0;
+            if (sizeSel.options.length > 0 && sizeSel.selectedIndex !== -1) { unitPrice = parseFloat(sizeSel.value); }
+            const qtd = parseInt(document.getElementById('quantity').value) || 0;
+            const desc = parseFloat(document.getElementById('discount').value) || 0;
+            let total = unitPrice * qtd;
+            if (desc > 0) total -= total * (desc / 100);
+            previewLabel.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+        }
+        function addToCart() {
+            const index = document.getElementById('product-select').value;
+            if (index === "") return alert("Selecione um produto!");
+            const prod = catalog[index];
+            const sizeSel = document.getElementById('size-select');
+            let sizeName = "Único"; let unitPrice = 0;
+            if (prod.prices && Object.keys(prod.prices).length > 0) {
+                 if (sizeSel.selectedIndex === -1) return alert("Selecione um tamanho!");
+                 sizeName = sizeSel.options[sizeSel.selectedIndex].dataset.sizeName;
+                 unitPrice = parseFloat(sizeSel.value);
+            }
+            const qtd = parseInt(document.getElementById('quantity').value) || 1;
+            const desc = parseFloat(document.getElementById('discount').value) || 0;
+            let total = unitPrice * qtd;
+            if(desc > 0) total -= total * (desc/100);
+            cart.push({ prodName: prod.name, size: sizeName, qtd, unitPrice, discount: desc, total, image: prod.image });
+            updateCartUI();
+            document.getElementById('quantity').value = "10";
+            document.getElementById('discount').value = "0";
+            calculatePreview();
+            setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+        }
+        function removeFromCart(i) { cart.splice(i, 1); updateCartUI(); }
+        function resetSystem() { if(cart.length > 0 && !confirm("Limpar pedido?")) return; cart = []; document.getElementById('product-select').value = ""; loadSizes(); updateCartUI(); calculatePreview(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        function copyTextToClipboard(text) { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert("Texto copiado!"); }
+        
         document.getElementById('settings-logo-input').addEventListener('change', function(e) { processImage(e.target.files[0], 150, (b64) => { settings.logo = b64; }); });
-        document.getElementById('new-prod-file').addEventListener('change', function(e) { 
-            processImage(e.target.files[0], 500, (b64) => { 
-                document.getElementById('new-prod-img-base64').value = b64; 
-                document.getElementById('form-img-preview').src = b64;
-                document.getElementById('form-img-preview').classList.remove('hidden');
-            }); 
-        });
+        document.getElementById('new-prod-file').addEventListener('change', function(e) { processImage(e.target.files[0], 500, (b64) => { document.getElementById('new-prod-img-base64').value = b64; document.getElementById('form-img-preview').src = b64; document.getElementById('form-img-preview').classList.remove('hidden'); }); });
         function processImage(f,mw,cb){if(!f)return;const r=new FileReader();r.onload=(e)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');const x=c.getContext('2d');let w=i.width,h=i.height;if(w>h){if(w>mw){h*=mw/w;w=mw}}else{if(h>mw){w*=mw/h;h=mw}}c.width=w;c.height=h;x.drawImage(i,0,0,w,h);cb(c.toDataURL('image/jpeg',0.7))};i.src=e.target.result};r.readAsDataURL(f)}
         
-        // --- ADMIN LIST ---
-        function deleteProduct(i) { if(confirm("Apagar?")) { catalog.splice(i,1); localStorage.setItem('sublimacao_catalog_v3', JSON.stringify(catalog)); renderAdminList(); renderProductOptions(); cancelEdit(); } }
-        function renderAdminList() { 
-            const l=document.getElementById('product-list');l.innerHTML='';
-            catalog.forEach((p,i)=>{
-                l.innerHTML+=`
-                <li class="flex justify-between items-center py-3 border-b text-sm">
-                    <div class="flex items-center gap-3">
-                        ${p.image ? `<img src="${p.image}" class="w-10 h-10 rounded object-cover border">` : '<div class="w-10 h-10 bg-gray-200 rounded"></div>'}
-                        <span class="font-medium">${p.name}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="loadProductForEdit(${i})" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
-                        <button onclick="deleteProduct(${i})" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
-                    </div>
-                </li>`
-            }); 
+        function loadProductForEdit(index) {
+            const prod = catalog[index]; editingIndex = index;
+            document.getElementById('new-prod-name').value = prod.name;
+            document.getElementById('new-prod-img-base64').value = prod.image || "";
+            let priceText = ""; if (prod.prices) { for (let [size, price] of Object.entries(prod.prices)) { priceText += `${size}=${price.toFixed(2)}\n`; } }
+            document.getElementById('new-prod-sizes').value = priceText.trim();
+            document.getElementById('form-title').textContent = "Editar Produto";
+            const btnSave = document.getElementById('btn-save-prod'); btnSave.textContent = "Atualizar Produto";
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+            const imgPrev = document.getElementById('form-img-preview');
+            if (prod.image) { imgPrev.src = prod.image; imgPrev.classList.remove('hidden'); } else { imgPrev.classList.add('hidden'); }
+            document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
         }
+        function cancelEdit() {
+            editingIndex = -1;
+            document.getElementById('new-prod-name').value = ''; document.getElementById('new-prod-sizes').value = ''; document.getElementById('new-prod-img-base64').value = ''; document.getElementById('new-prod-file').value = ''; document.getElementById('form-img-preview').classList.add('hidden');
+            document.getElementById('form-title').textContent = "Novo Produto";
+            const btnSave = document.getElementById('btn-save-prod'); btnSave.textContent = "Salvar Produto";
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+        }
+        function saveProduct() {
+            const name = document.getElementById('new-prod-name').value; const sizes = document.getElementById('new-prod-sizes').value; const img = document.getElementById('new-prod-img-base64').value;
+            if(!name || !sizes) return alert("Preencha o nome e os preços!");
+            const prices = {}; sizes.split('\n').forEach(l => { if(l.includes('=')) { let [k,v] = l.split('='); let val = parseFloat(v.replace('R$','').trim().replace(',','.')); if(!isNaN(val)) prices[k.trim()] = val; } });
+            const newProdData = { id: editingIndex >= 0 ? catalog[editingIndex].id : Date.now(), name: name, prices: prices, image: img };
+            try { if (editingIndex >= 0) { catalog[editingIndex] = newProdData; alert("Produto atualizado!"); } else { catalog.push(newProdData); alert("Produto criado!"); } localStorage.setItem('sublimacao_catalog_v3', JSON.stringify(catalog)); renderAdminList(); renderProductOptions(); cancelEdit(); } catch(e) { alert("Memória cheia!"); }
+        }
+        function deleteProduct(i) { if(confirm("Apagar?")) { catalog.splice(i,1); localStorage.setItem('sublimacao_catalog_v3', JSON.stringify(catalog)); renderAdminList(); renderProductOptions(); cancelEdit(); } }
+        function renderAdminList() { const l=document.getElementById('product-list');l.innerHTML=''; catalog.forEach((p,i)=>{ l.innerHTML+=`<li class="flex justify-between items-center py-3 border-b text-sm"><div class="flex items-center gap-3">${p.image ? `<img src="${p.image}" class="w-10 h-10 rounded object-cover border">` : '<div class="w-10 h-10 bg-gray-200 rounded"></div>'}<span class="font-medium">${p.name}</span></div><div class="flex gap-2"><button onclick="loadProductForEdit(${i})" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button><button onclick="deleteProduct(${i})" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button></div></li>` }); }
         function renderProductOptions() { const s=document.getElementById('product-select');s.innerHTML='<option value="">Selecione...</option>';catalog.forEach((p,i)=>s.add(new Option(p.name, i))); }
         function toggleAdmin() { const a=document.getElementById('admin-view');const s=document.getElementById('sales-view');if(a.classList.contains('hidden')){if(prompt("Senha:")===settings.password){s.classList.add('hidden');a.classList.remove('hidden')}}else{a.classList.add('hidden');s.classList.remove('hidden')}}
         function exportData() { const d="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({catalog,settings}));const a=document.createElement('a');a.href=d;a.download="backup.json";a.click(); }
