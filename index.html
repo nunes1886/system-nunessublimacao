@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gerador & CRM Pro v15</title>
+    <title>Gerador & CRM Pro v17</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -27,7 +27,7 @@
                 <img id="app-logo" src="" class="hidden w-10 h-10 rounded-full bg-white object-contain p-0.5 border-2 border-white">
                 <h1 class="text-lg font-bold leading-tight" id="display-store-name">Sua Loja<br><span class="text-xs font-normal opacity-80">Gestão Financeira</span></h1>
             </div>
-            <button onclick="toggleAdmin()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded border border-white/40 backdrop-blur-sm">
+            <button onclick="openLoginModal()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded border border-white/40 backdrop-blur-sm">
                 <i class="fas fa-cog"></i>
             </button>
         </div>
@@ -117,24 +117,30 @@
             </div>
 
             <div class="grid grid-cols-2 gap-3 mb-6">
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                     <div class="text-xs text-gray-500 uppercase font-bold mb-1">Orçamentos</div>
-                    <div class="text-2xl font-bold text-blue-600" id="dash-total-quotes">0</div>
+                    <div class="text-2xl font-bold text-gray-600" id="dash-total-quotes">0</div>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-green-100">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                     <div class="text-xs text-gray-500 uppercase font-bold mb-1">Vendas Totais</div>
-                    <div class="text-2xl font-bold text-green-600" id="dash-total-sales">0</div>
+                    <div class="text-2xl font-bold text-gray-800" id="dash-total-sales">0</div>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-purple-100 col-span-2">
-                    <div class="flex justify-between items-end">
-                        <div>
-                            <div class="text-xs text-gray-500 uppercase font-bold mb-1">Caixa Real (Entradas)</div>
-                            <div class="text-3xl font-bold text-purple-700" id="dash-revenue">R$ 0,00</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-xs text-gray-400">A Receber</div>
-                            <div class="font-bold text-red-500" id="dash-pending">R$ 0,00</div>
-                        </div>
+
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-yellow-200 bg-yellow-50/50">
+                    <div class="text-xs text-yellow-600 uppercase font-bold mb-1">Sinais (Entrada)</div>
+                    <div class="text-xl font-bold text-yellow-700" id="dash-signals">R$ 0,00</div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-red-200 bg-red-50/50">
+                    <div class="text-xs text-red-500 uppercase font-bold mb-1">A Receber</div>
+                    <div class="text-xl font-bold text-red-600" id="dash-pending">R$ 0,00</div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-purple-200 col-span-2 relative overflow-hidden">
+                    <div class="absolute right-0 top-0 p-4 opacity-10"><i class="fas fa-wallet text-6xl text-purple-700"></i></div>
+                    <div class="relative z-10">
+                        <div class="text-xs text-purple-500 uppercase font-bold mb-1">Caixa Real (No Bolso)</div>
+                        <div class="text-4xl font-bold text-purple-700 mt-1" id="dash-revenue">R$ 0,00</div>
+                        <div class="text-[10px] text-gray-400 mt-1">Soma de Sinais + Pagamentos Finais</div>
                     </div>
                 </div>
             </div>
@@ -157,6 +163,23 @@
             </p>
         </div>
 
+        <div id="login-modal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center backdrop-blur-sm">
+            <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 scale-in">
+                <div class="text-center mb-4">
+                    <div class="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i class="fas fa-lock text-purple-600"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800">Acesso Restrito</h3>
+                    <p class="text-xs text-gray-500">Digite a senha de administrador</p>
+                </div>
+                <input type="password" id="login-pass" placeholder="Senha" class="w-full p-3 border border-gray-300 rounded-lg mb-4 text-center text-lg outline-none focus:ring-2 focus:ring-purple-500">
+                <div class="flex gap-2">
+                    <button onclick="closeLogin()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg font-bold text-sm">Cancelar</button>
+                    <button onclick="checkLogin()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-bold text-sm">Entrar</button>
+                </div>
+            </div>
+        </div>
+
         <div id="admin-view" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-end sm:items-center justify-center backdrop-blur-sm">
             <div class="bg-white w-full max-w-md h-[90vh] sm:h-auto sm:rounded-xl rounded-t-2xl shadow-2xl overflow-y-auto">
                 <div class="p-5">
@@ -170,7 +193,7 @@
                             <div><label class="block text-xs text-gray-500 mb-1">Nome da Empresa</label><input type="text" id="settings-name" class="w-full p-2 text-sm border rounded"></div>
                             <div><label class="block text-xs text-gray-500 mb-1">Cor</label><select id="settings-color" class="w-full p-2 text-sm border rounded" onchange="previewColor(this.value)"><option value="purple">Roxo</option><option value="blue">Azul</option><option value="green">Verde</option><option value="pink">Rosa</option><option value="slate">Preto</option><option value="orange">Laranja</option></select></div>
                             <div><label class="block text-xs text-gray-500 mb-1">Logo</label><input type="file" id="settings-logo-input" accept="image/*" class="text-xs w-full"></div>
-                            <div><label class="block text-xs text-gray-500 mb-1">Senha Admin</label><input type="text" id="settings-password" class="w-full p-2 text-sm border rounded"></div>
+                            <div><label class="block text-xs text-gray-500 mb-1">Senha Admin</label><input type="password" id="settings-password" class="w-full p-2 text-sm border rounded"></div>
                             <button onclick="saveSettings()" id="btn-save-settings" class="w-full theme-bg-color text-white text-xs py-2 rounded font-bold">Salvar Configurações</button>
                         </div>
                     </details>
@@ -231,64 +254,36 @@
             document.getElementById('remaining-balance').innerText = `R$ ${balanceDisplay.toFixed(2).replace('.', ',')}`;
         }
 
-        // --- DASHBOARD COM CÁLCULO HÍBRIDO (V15) ---
         function renderDashboard() {
             const list = document.getElementById('history-list'); list.innerHTML = '';
             const filterValue = document.getElementById('dash-month-filter').value;
             if (!filterValue) return;
             const [filterYear, filterMonth] = filterValue.split('-').map(Number);
-            
-            let totalQuotes = 0; 
-            let totalSales = 0; 
-            let realRevenue = 0; // Caixa Real
-            let pendingRevenue = 0; // Falta Receber
-
+            let totalQuotes = 0; let totalSales = 0; let realRevenue = 0; let totalSignals = 0; let pendingRevenue = 0;
             const sortedOrders = [...orders].reverse();
             let hasItems = false;
-            
             sortedOrders.forEach(order => {
                 const orderDate = new Date(order.date);
                 const isMatch = orderDate.getMonth() + 1 === filterMonth && orderDate.getFullYear() === filterYear;
-                
                 if (isMatch) {
-                    hasItems = true; 
-                    totalQuotes++;
-                    
+                    hasItems = true; totalQuotes++;
                     const signal = order.signal || 0;
                     const total = order.total || 0;
                     const balance = total - signal;
-
-                    // LÓGICA FINANCEIRA V15:
-                    // 1. Sinal SEMPRE entra no caixa
-                    realRevenue += signal;
-
-                    // 2. Restante só entra se estiver fechado
-                    if (order.status === 'closed') {
-                        totalSales++;
-                        realRevenue += balance;
-                    } else {
-                        // Se estiver aberto, o restante é "A Receber"
-                        pendingRevenue += balance;
-                    }
-
+                    totalSignals += signal; realRevenue += signal;
+                    if (order.status === 'closed') { totalSales++; realRevenue += balance; } else { pendingRevenue += balance; }
                     const statusColor = order.status === 'closed' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-600 border-yellow-100';
                     const statusIcon = order.status === 'closed' ? 'fa-check' : 'fa-clock';
                     const client = order.client || 'Cliente não ident.';
-                    
-                    const balanceHtml = (order.status !== 'closed' && balance > 0) 
-                        ? `<div class="text-[10px] text-red-500 font-bold mt-0.5">Falta: R$ ${balance.toFixed(2).replace('.',',')}</div>` 
-                        : '';
-
+                    const balanceHtml = (order.status !== 'closed' && balance > 0) ? `<div class="text-[10px] text-red-500 font-bold mt-0.5">Falta: R$ ${balance.toFixed(2).replace('.',',')}</div>` : '';
                     const itemHtml = `<li class="p-3 flex justify-between items-center hover:bg-gray-50 transition"><div><div class="font-bold text-gray-700">${client}</div><div class="text-xs text-gray-400">${new Date(order.date).toLocaleDateString('pt-BR')} • ${order.itemsCount} itens</div><div class="text-sm font-bold mt-1 text-gray-800">R$ ${order.total.toFixed(2).replace('.',',')}</div>${balanceHtml}</div><button onclick="toggleOrderStatus(${order.id})" class="border px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${statusColor}"><i class="fas ${statusIcon}"></i> ${order.status === 'closed' ? 'Vendido' : 'Pendente'}</button></li>`;
                     list.innerHTML += itemHtml;
                 }
             });
-            
             document.getElementById('empty-history-msg').classList.toggle('hidden', hasItems);
             document.getElementById('dash-total-quotes').innerText = totalQuotes;
             document.getElementById('dash-total-sales').innerText = totalSales;
-            
-            // Exibe Caixa Real e Pendente
+            document.getElementById('dash-signals').innerText = `R$ ${totalSignals.toFixed(2).replace('.',',')}`;
             document.getElementById('dash-revenue').innerText = `R$ ${realRevenue.toFixed(2).replace('.',',')}`;
             document.getElementById('dash-pending').innerText = `R$ ${pendingRevenue.toFixed(2).replace('.',',')}`;
         }
@@ -311,17 +306,14 @@
                 const clientName = document.getElementById('client-name').value.trim() || "";
                 const signalVal = parseFloat(document.getElementById('down-payment').value) || 0;
                 let grandTotal = 0; let itemsText = "";
-                
                 cart.forEach((item) => { grandTotal += item.total; itemsText += `${item.qtd}x ${item.prodName} (${item.size})\n`; });
                 const balanceVal = grandTotal - signalVal;
                 const newOrder = { id: Date.now(), date: new Date().toISOString(), client: clientName, total: grandTotal, signal: signalVal, itemsCount: cart.length, status: 'open' };
                 orders.push(newOrder); localStorage.setItem('sublimacao_orders', JSON.stringify(orders));
-                
                 let text = `*ORÇAMENTO - ${settings.storeName.toUpperCase()}* 🛍️\n`;
                 if(clientName) text += `Cliente: ${clientName}\n`;
                 text += `\n${itemsText}\n*TOTAL: R$ ${grandTotal.toFixed(2).replace('.', ',')}*`;
                 if(signalVal > 0) { text += `\n✅ Sinal: R$ ${signalVal.toFixed(2).replace('.', ',')}`; text += `\n🔴 *Falta Pagar: R$ ${balanceVal.toFixed(2).replace('.', ',')}*`; }
-
                 let filesArray = [];
                 if (cart.length === 1 && cart[0].image && cart[0].image.startsWith('data:image')) {
                     const res = await fetch(cart[0].image); const blob = await res.blob();
@@ -330,7 +322,6 @@
                     const receiptBlob = await generateReceiptImage(grandTotal, clientName, signalVal, balanceVal);
                     if(receiptBlob) filesArray = [new File([receiptBlob], "pedido.png", { type: "image/png" })];
                 }
-                
                 if (navigator.share && filesArray.length > 0 && navigator.canShare({ files: filesArray })) { await navigator.share({ files: filesArray, text: text }); } else { await navigator.share({ text: text }); }
                 setTimeout(() => { resetSystem(); }, 3000);
             } catch (e) { console.error(e); alert("Salvo no histórico! Texto copiado."); setTimeout(() => { resetSystem(); }, 1000); } finally { btn.innerHTML = originalBtn; }
@@ -353,6 +344,28 @@
             html2canvas(document.getElementById('receipt-canvas')).then(c=>c.toBlob(b=>r(b))).catch(e=>r(null))
         })}
         
+        // --- ADMIN LOGIN LOGIC (NEW) ---
+        function openLoginModal(){
+            const adm = document.getElementById('admin-view');
+            if(!adm.classList.contains('hidden')) { // Se ja ta aberto, fecha
+                adm.classList.add('hidden');
+                return;
+            }
+            document.getElementById('login-modal').classList.remove('hidden');
+            document.getElementById('login-pass').value = '';
+            document.getElementById('login-pass').focus();
+        }
+        function closeLogin(){ document.getElementById('login-modal').classList.add('hidden'); }
+        function checkLogin(){
+            const pass = document.getElementById('login-pass').value;
+            if(pass === settings.password){
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('admin-view').classList.remove('hidden');
+            } else { alert("Senha incorreta!"); }
+        }
+        function toggleAdmin(){ document.getElementById('admin-view').classList.add('hidden'); } // Só fecha por aqui agora
+
+        // --- CORE ---
         function exportData(){const d="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({catalog,settings,orders}));const a=document.createElement('a');a.href=d;a.download="backup_completo.json";a.click()}
         function importData(i){const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){try{const d=JSON.parse(e.target.result);if(d.catalog){catalog=d.catalog;localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(catalog))}if(d.settings){settings=d.settings;localStorage.setItem('sublimacao_settings',JSON.stringify(settings))}if(d.orders){orders=d.orders;localStorage.setItem('sublimacao_orders',JSON.stringify(orders))}alert("Restaurado!");location.reload()}catch(r){alert("Erro backup")}};r.readAsText(f)}
         function applyTheme(c){const t=themes[c]||themes.purple;document.getElementById('navbar').className=`${t.bg} text-white shadow-lg sticky top-0 z-50 transition-colors duration-300`;document.querySelectorAll('.theme-text-color').forEach(e=>{Object.values(themes).forEach(h=>e.classList.remove(h.text));e.classList.add(t.text)});document.querySelectorAll('.theme-bg-color').forEach(e=>{Object.values(themes).forEach(h=>e.classList.remove(h.btn));e.classList.add(t.btn)});const b=document.getElementById('btn-add');if(b)b.className=`w-full ${t.btn} text-white font-bold h-[45px] rounded-lg shadow flex items-center justify-center gap-2 hover:opacity-90 transition`;document.getElementById('btn-save-settings').className=`w-full ${t.btn} text-white text-xs py-2 rounded font-bold`;}
@@ -365,7 +378,7 @@
         function removeFromCart(i){cart.splice(i,1);updateCartUI()}
         function resetSystem(){if(cart.length>0&&!confirm("Limpar pedido?"))return;cart=[];document.getElementById('product-select').value="";document.getElementById('client-name').value="";document.getElementById('down-payment').value="";loadSizes();updateCartUI();calculatePreview();window.scrollTo({top:0,behavior:'smooth'})}
         function updateCartUI(){const l=document.getElementById('cart-list');const f=document.getElementById('footer-actions');const s=document.getElementById('cart-section');const t=document.getElementById('grand-total');l.innerHTML='';currentTotal=0;if(cart.length===0){s.classList.add('hidden');f.classList.add('hidden');document.body.style.paddingBottom="0";return}s.classList.remove('hidden');f.classList.remove('hidden');document.body.style.paddingBottom="100px";cart.forEach((e,i)=>{currentTotal+=e.total;l.innerHTML+=`<li class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center scale-in"><div class="flex items-center gap-3"><div class="bg-gray-100 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold text-gray-500">${i+1}</div><div><div class="font-bold text-gray-800 text-sm">${e.prodName} <span class="font-normal text-gray-500 text-xs">(${e.size})</span></div><div class="text-xs text-gray-500">${e.qtd}x R$ ${e.unitPrice.toFixed(2)}</div></div></div><div class="text-right"><div class="font-bold text-gray-700 text-sm">R$ ${e.total.toFixed(2).replace('.',',')}</div><button onclick="removeFromCart(${i})" class="text-[10px] text-red-400 p-1"><i class="fas fa-trash"></i></button></div></li>`});t.textContent=`R$ ${currentTotal.toFixed(2).replace('.',',')}`;calculateBalance()}
-        document.getElementById('settings-logo-input').addEventListener('change',function(e){processImage(e.target.files[0],150,(b)=>{settings.logo=b})});document.getElementById('new-prod-file').addEventListener('change',function(e){processImage(e.target.files[0],500,(b)=>{document.getElementById('new-prod-img-base64').value=b;document.getElementById('form-img-preview').src=b;document.getElementById('form-img-preview').classList.remove('hidden')})});function processImage(f,mw,cb){if(!f)return;const r=new FileReader();r.onload=(e)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');const x=c.getContext('2d');let w=i.width,h=i.height;if(w>h){if(w>mw){h*=mw/w;w=mw}}else{if(h>mw){w*=mw/h;h=mw}}c.width=w;c.height=h;x.drawImage(i,0,0,w,h);cb(c.toDataURL('image/jpeg',0.7))};i.src=e.target.result};r.readAsDataURL(f)}function loadProductForEdit(i){const p=catalog[i];editingIndex=i;document.getElementById('new-prod-name').value=p.name;document.getElementById('new-prod-img-base64').value=p.image||"";let t="";if(p.prices){for(let[z,r]of Object.entries(p.prices)){t+=`${z}=${r.toFixed(2)}\n`}}document.getElementById('new-prod-sizes').value=t.trim();document.getElementById('form-title').textContent="Editar";const b=document.getElementById('btn-save-prod');b.textContent="Atualizar";document.getElementById('btn-cancel-edit').classList.remove('hidden');const ip=document.getElementById('form-img-preview');if(p.image){ip.src=p.image;ip.classList.remove('hidden')}else{ip.classList.add('hidden')}}function cancelEdit(){editingIndex=-1;document.getElementById('new-prod-name').value='';document.getElementById('new-prod-sizes').value='';document.getElementById('new-prod-img-base64').value='';document.getElementById('new-prod-file').value='';document.getElementById('form-img-preview').classList.add('hidden');document.getElementById('form-title').textContent="Novo";const b=document.getElementById('btn-save-prod');b.textContent="Salvar";document.getElementById('btn-cancel-edit').classList.add('hidden')}function saveProduct(){const n=document.getElementById('new-prod-name').value;const s=document.getElementById('new-prod-sizes').value;const i=document.getElementById('new-prod-img-base64').value;if(!n||!s)return alert("Preencha!");const p={};s.split('\n').forEach(l=>{if(l.includes('=')){let [k,v]=l.split('=');let val=parseFloat(v.replace('R$','').trim().replace(',','.'));if(!isNaN(val))p[k.trim()]=val}});const d={id:editingIndex>=0?catalog[editingIndex].id:Date.now(),name:n,prices:p,image:i};try{if(editingIndex>=0){catalog[editingIndex]=d;alert("Atualizado!")}else{catalog.push(d);alert("Criado!")}localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(catalog));renderAdminList();renderProductOptions();cancelEdit()}catch(e){alert("Memória!")}}function deleteProduct(i){if(confirm("Apagar?")){catalog.splice(i,1);localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(catalog));renderAdminList();renderProductOptions();cancelEdit()}}function renderAdminList(){const l=document.getElementById('product-list');l.innerHTML='';catalog.forEach((p,i)=>{l.innerHTML+=`<li class="flex justify-between items-center py-3 border-b text-sm"><div class="flex items-center gap-3">${p.image?`<img src="${p.image}" class="w-10 h-10 rounded object-cover border">`:'<div class="w-10 h-10 bg-gray-200 rounded"></div>'}<span class="font-medium">${p.name}</span></div><div class="flex gap-2"><button onclick="loadProductForEdit(${i})" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button><button onclick="deleteProduct(${i})" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button></div></li>`})}function renderProductOptions(){const s=document.getElementById('product-select');s.innerHTML='<option value="">Selecione...</option>';catalog.forEach((p,i)=>s.add(new Option(p.name,i)))}function toggleAdmin(){const a=document.getElementById('admin-view');if(a.classList.contains('hidden')){if(prompt("Senha:")===settings.password){a.classList.remove('hidden')}}else{a.classList.add('hidden')}}
+        document.getElementById('settings-logo-input').addEventListener('change',function(e){processImage(e.target.files[0],150,(b)=>{settings.logo=b})});document.getElementById('new-prod-file').addEventListener('change',function(e){processImage(e.target.files[0],500,(b)=>{document.getElementById('new-prod-img-base64').value=b;document.getElementById('form-img-preview').src=b;document.getElementById('form-img-preview').classList.remove('hidden')})});function processImage(f,mw,cb){if(!f)return;const r=new FileReader();r.onload=(e)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');const x=c.getContext('2d');let w=i.width,h=i.height;if(w>h){if(w>mw){h*=mw/w;w=mw}}else{if(h>mw){w*=mw/h;h=mw}}c.width=w;c.height=h;x.drawImage(i,0,0,w,h);cb(c.toDataURL('image/jpeg',0.7))};i.src=e.target.result};r.readAsDataURL(f)}function loadProductForEdit(i){const p=catalog[i];editingIndex=i;document.getElementById('new-prod-name').value=p.name;document.getElementById('new-prod-img-base64').value=p.image||"";let t="";if(p.prices){for(let[z,r]of Object.entries(p.prices)){t+=`${z}=${r.toFixed(2)}\n`}}document.getElementById('new-prod-sizes').value=t.trim();document.getElementById('form-title').textContent="Editar";const b=document.getElementById('btn-save-prod');b.textContent="Atualizar";document.getElementById('btn-cancel-edit').classList.remove('hidden');const ip=document.getElementById('form-img-preview');if(p.image){ip.src=p.image;ip.classList.remove('hidden')}else{ip.classList.add('hidden')}}function cancelEdit(){editingIndex=-1;document.getElementById('new-prod-name').value='';document.getElementById('new-prod-sizes').value='';document.getElementById('new-prod-img-base64').value='';document.getElementById('new-prod-file').value='';document.getElementById('form-img-preview').classList.add('hidden');document.getElementById('form-title').textContent="Novo";const b=document.getElementById('btn-save-prod');b.textContent="Salvar";document.getElementById('btn-cancel-edit').classList.add('hidden')}function saveProduct(){const n=document.getElementById('new-prod-name').value;const s=document.getElementById('new-prod-sizes').value;const i=document.getElementById('new-prod-img-base64').value;if(!n||!s)return alert("Preencha!");const p={};s.split('\n').forEach(l=>{if(l.includes('=')){let [k,v]=l.split('=');let val=parseFloat(v.replace('R$','').trim().replace(',','.'));if(!isNaN(val))p[k.trim()]=val}});const d={id:editingIndex>=0?catalog[editingIndex].id:Date.now(),name:n,prices:p,image:i};try{if(editingIndex>=0){catalog[editingIndex]=d;alert("Atualizado!")}else{catalog.push(d);alert("Criado!")}localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(catalog));renderAdminList();renderProductOptions();cancelEdit()}catch(e){alert("Memória!")}}function deleteProduct(i){if(confirm("Apagar?")){catalog.splice(i,1);localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(catalog));renderAdminList();renderProductOptions();cancelEdit()}}function renderAdminList(){const l=document.getElementById('product-list');l.innerHTML='';catalog.forEach((p,i)=>{l.innerHTML+=`<li class="flex justify-between items-center py-3 border-b text-sm"><div class="flex items-center gap-3">${p.image?`<img src="${p.image}" class="w-10 h-10 rounded object-cover border">`:'<div class="w-10 h-10 bg-gray-200 rounded"></div>'}<span class="font-medium">${p.name}</span></div><div class="flex gap-2"><button onclick="loadProductForEdit(${i})" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button><button onclick="deleteProduct(${i})" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button></div></li>`})}function renderProductOptions(){const s=document.getElementById('product-select');s.innerHTML='<option value="">Selecione...</option>';catalog.forEach((p,i)=>s.add(new Option(p.name,i)))}
 
         init();
     </script>
