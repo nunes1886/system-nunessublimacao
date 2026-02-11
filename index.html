@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gerador & CRM Pro</title>
+    <title>Gerador & CRM Pro v14</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -83,13 +83,22 @@
                     <h3 class="text-sm font-bold text-gray-600">Carrinho</h3>
                     <button onclick="resetSystem()" class="text-xs text-red-400 underline">Limpar</button>
                 </div>
-                <ul id="cart-list" class="space-y-2 mb-24"></ul>
+                <ul id="cart-list" class="space-y-2 mb-4"></ul>
+
+                <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-100 mb-20 shadow-sm">
+                    <label class="block text-[10px] font-bold text-yellow-700 uppercase mb-1"><i class="fas fa-money-bill-wave"></i> Valor do Sinal (Entrada)</label>
+                    <input type="number" id="down-payment" placeholder="R$ 0,00" oninput="calculateBalance()" class="w-full p-2 border border-yellow-200 rounded text-sm font-bold text-gray-700 bg-white focus:outline-none focus:border-yellow-400">
+                    <div class="flex justify-between items-center mt-2 border-t border-yellow-200 pt-2">
+                        <span class="text-xs text-gray-500 uppercase font-bold">Falta Pagar:</span>
+                        <span id="remaining-balance" class="font-bold text-red-500 text-lg">R$ 0,00</span>
+                    </div>
+                </div>
             </div>
             
             <div id="footer-actions" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] hidden z-40">
                 <div class="container mx-auto max-w-md flex justify-between items-center gap-4">
                     <div class="flex flex-col">
-                        <span class="text-xs text-gray-500 font-bold uppercase">Total</span>
+                        <span class="text-xs text-gray-500 font-bold uppercase">Total Geral</span>
                         <span id="grand-total" class="text-2xl font-bold text-green-600">R$ 0,00</span>
                     </div>
                     <button id="btn-finish" onclick="finalizeOrder()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
@@ -155,7 +164,6 @@
                         <h2 class="text-xl font-bold text-gray-800">Administração</h2>
                         <button onclick="toggleAdmin()" class="text-gray-400 hover:text-red-500 px-2 text-xl">&times;</button>
                     </div>
-
                     <details class="mb-6 bg-gray-50 p-3 rounded-lg border border-gray-200">
                         <summary class="font-bold cursor-pointer text-sm theme-text-color">🛠️ Configurações</summary>
                         <div class="mt-3 space-y-3">
@@ -166,7 +174,6 @@
                             <button onclick="saveSettings()" id="btn-save-settings" class="w-full theme-bg-color text-white text-xs py-2 rounded font-bold">Salvar Configurações</button>
                         </div>
                     </details>
-
                     <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
                         <h3 class="font-bold text-sm text-gray-600 mb-3 flex justify-between"><span id="form-title">Novo Produto</span><button id="btn-cancel-edit" onclick="cancelEdit()" class="text-xs text-red-500 hidden">Cancelar</button></h3>
                         <input type="text" id="new-prod-name" placeholder="Nome" class="w-full p-3 border rounded-lg mb-3">
@@ -175,10 +182,8 @@
                         <textarea id="new-prod-sizes" rows="3" placeholder="Preços (Ex: P=10.00)" class="w-full p-3 border rounded-lg mb-3 font-mono text-sm"></textarea>
                         <button id="btn-save-prod" onclick="saveProduct()" class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg shadow">Salvar Produto</button>
                     </div>
-
                     <h3 class="font-bold text-gray-600 text-sm mb-2">Lista de Produtos</h3>
                     <ul id="product-list" class="divide-y divide-gray-100 max-h-60 overflow-y-auto mb-4"></ul>
-                    
                     <div class="pt-4 border-t text-center space-y-4">
                         <div class="flex justify-center gap-4">
                             <button onclick="exportData()" class="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded border border-blue-200"><i class="fas fa-download"></i> Backup</button>
@@ -190,13 +195,14 @@
         </div>
     </div>
 
-    <div id="receipt-canvas"><div style="text-align: center; margin-bottom: 20px;"><img id="receipt-logo" src="" style="width: 60px; margin-bottom: 5px; display: none;"><h2 style="margin: 0; font-size: 18px; font-weight: bold;">ORÇAMENTO</h2><p style="margin: 0; font-size: 12px; color: #666;" id="receipt-store-name">Sua Loja</p><p style="margin: 0; font-size: 12px; color: #666;" id="receipt-date"></p><p style="margin: 0; font-size: 12px; font-weight:bold; color: #444;" id="receipt-client"></p></div><hr style="border: 1px dashed #ccc;"><div id="receipt-items" style="margin: 15px 0;"></div><hr style="border: 1px dashed #ccc;"><div style="text-align: right; margin-top: 15px;"><h1 style="margin: 0; font-size: 24px; font-weight: bold;" id="receipt-total">R$ 0,00</h1></div></div>
+    <div id="receipt-canvas"><div style="text-align: center; margin-bottom: 20px;"><img id="receipt-logo" src="" style="width: 60px; margin-bottom: 5px; display: none;"><h2 style="margin: 0; font-size: 18px; font-weight: bold;">ORÇAMENTO</h2><p style="margin: 0; font-size: 12px; color: #666;" id="receipt-store-name">Sua Loja</p><p style="margin: 0; font-size: 12px; color: #666;" id="receipt-date"></p><p style="margin: 0; font-size: 12px; font-weight:bold; color: #444;" id="receipt-client"></p></div><hr style="border: 1px dashed #ccc;"><div id="receipt-items" style="margin: 15px 0;"></div><hr style="border: 1px dashed #ccc;"><div style="text-align: right; margin-top: 15px;"><h1 style="margin: 0; font-size: 24px; font-weight: bold;" id="receipt-total">R$ 0,00</h1><p id="receipt-signal" style="margin: 5px 0 0 0; font-size: 14px; color: #666; display:none;">Sinal: R$ 0,00</p><p id="receipt-balance" style="margin: 5px 0 0 0; font-size: 16px; color: #d32f2f; font-weight:bold; display:none;">Falta: R$ 0,00</p></div></div>
 
     <script>
         const themes={purple:{bg:'bg-purple-700',text:'text-purple-700',btn:'bg-purple-600',border:'border-purple-500',light:'bg-purple-100',textLight:'text-purple-600'},blue:{bg:'bg-blue-700',text:'text-blue-700',btn:'bg-blue-600',border:'border-blue-500',light:'bg-blue-100',textLight:'text-blue-600'},green:{bg:'bg-emerald-700',text:'text-emerald-700',btn:'bg-emerald-600',border:'border-emerald-500',light:'bg-emerald-100',textLight:'text-emerald-600'},pink:{bg:'bg-pink-600',text:'text-pink-600',btn:'bg-pink-500',border:'border-pink-500',light:'bg-pink-100',textLight:'text-pink-600'},slate:{bg:'bg-slate-800',text:'text-slate-800',btn:'bg-slate-700',border:'border-slate-600',light:'bg-slate-200',textLight:'text-slate-700'},orange:{bg:'bg-orange-600',text:'text-orange-600',btn:'bg-orange-500',border:'border-orange-500',light:'bg-orange-100',textLight:'text-orange-600'}};
         
         let catalog=[], cart=[], orders=[], editingIndex=-1;
         let settings={password:"1234",logo:"",storeName:"Nunes Sublimação",theme:"purple"};
+        let currentTotal = 0;
 
         function init(){
             try{
@@ -218,6 +224,13 @@
             else { document.getElementById('view-sales').classList.add('hidden'); document.getElementById('view-dashboard').classList.remove('hidden'); renderDashboard(); }
         }
 
+        function calculateBalance() {
+            const signal = parseFloat(document.getElementById('down-payment').value) || 0;
+            const balance = currentTotal - signal;
+            const balanceDisplay = balance > 0 ? balance : 0; // Não mostra negativo
+            document.getElementById('remaining-balance').innerText = `R$ ${balanceDisplay.toFixed(2).replace('.', ',')}`;
+        }
+
         function renderDashboard() {
             const list = document.getElementById('history-list'); list.innerHTML = '';
             const filterValue = document.getElementById('dash-month-filter').value;
@@ -235,7 +248,15 @@
                     const statusColor = order.status === 'closed' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-600 border-yellow-100';
                     const statusIcon = order.status === 'closed' ? 'fa-check' : 'fa-clock';
                     const client = order.client || 'Cliente não ident.';
-                    const itemHtml = `<li class="p-3 flex justify-between items-center hover:bg-gray-50 transition"><div><div class="font-bold text-gray-700">${client}</div><div class="text-xs text-gray-400">${new Date(order.date).toLocaleDateString('pt-BR')} • ${order.itemsCount} itens</div><div class="text-sm font-bold mt-1 text-gray-800">R$ ${order.total.toFixed(2).replace('.',',')}</div></div><button onclick="toggleOrderStatus(${order.id})" class="border px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${statusColor}"><i class="fas ${statusIcon}"></i> ${order.status === 'closed' ? 'Vendido' : 'Pendente'}</button></li>`;
+                    
+                    // Lógica de mostrar Restante no Histórico
+                    const signal = order.signal || 0;
+                    const balance = order.total - signal;
+                    const balanceHtml = (order.status !== 'closed' && balance > 0) 
+                        ? `<div class="text-[10px] text-red-500 font-bold mt-0.5">Falta: R$ ${balance.toFixed(2).replace('.',',')}</div>` 
+                        : '';
+
+                    const itemHtml = `<li class="p-3 flex justify-between items-center hover:bg-gray-50 transition"><div><div class="font-bold text-gray-700">${client}</div><div class="text-xs text-gray-400">${new Date(order.date).toLocaleDateString('pt-BR')} • ${order.itemsCount} itens</div><div class="text-sm font-bold mt-1 text-gray-800">R$ ${order.total.toFixed(2).replace('.',',')}</div>${balanceHtml}</div><button onclick="toggleOrderStatus(${order.id})" class="border px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${statusColor}"><i class="fas ${statusIcon}"></i> ${order.status === 'closed' ? 'Vendido' : 'Pendente'}</button></li>`;
                     list.innerHTML += itemHtml;
                 }
             });
@@ -262,28 +283,63 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
             try {
                 const clientName = document.getElementById('client-name').value.trim() || "";
+                const signalVal = parseFloat(document.getElementById('down-payment').value) || 0;
                 let grandTotal = 0; let itemsText = "";
+                
                 cart.forEach((item) => { grandTotal += item.total; itemsText += `${item.qtd}x ${item.prodName} (${item.size})\n`; });
-                const newOrder = { id: Date.now(), date: new Date().toISOString(), client: clientName, total: grandTotal, itemsCount: cart.length, status: 'open' };
+                
+                const balanceVal = grandTotal - signalVal;
+
+                const newOrder = { id: Date.now(), date: new Date().toISOString(), client: clientName, total: grandTotal, signal: signalVal, itemsCount: cart.length, status: 'open' };
                 orders.push(newOrder); localStorage.setItem('sublimacao_orders', JSON.stringify(orders));
+                
                 let text = `*ORÇAMENTO - ${settings.storeName.toUpperCase()}* 🛍️\n`;
                 if(clientName) text += `Cliente: ${clientName}\n`;
                 text += `\n${itemsText}\n*TOTAL: R$ ${grandTotal.toFixed(2).replace('.', ',')}*`;
+                
+                if(signalVal > 0) {
+                    text += `\n✅ Sinal: R$ ${signalVal.toFixed(2).replace('.', ',')}`;
+                    text += `\n🔴 *Falta Pagar: R$ ${balanceVal.toFixed(2).replace('.', ',')}*`;
+                }
+
                 let filesArray = [];
                 if (cart.length === 1 && cart[0].image && cart[0].image.startsWith('data:image')) {
                     const res = await fetch(cart[0].image); const blob = await res.blob();
                     filesArray = [new File([blob], "produto.jpg", { type: "image/jpeg" })];
-                } else if (cart.length > 1) {
-                    const receiptBlob = await generateReceiptImage(grandTotal, clientName);
+                } else if (cart.length > 1 || signalVal > 0) {
+                    // Gera imagem sempre que tiver sinal ou multiplos itens
+                    const receiptBlob = await generateReceiptImage(grandTotal, clientName, signalVal, balanceVal);
                     if(receiptBlob) filesArray = [new File([receiptBlob], "pedido.png", { type: "image/png" })];
                 }
+                
                 if (navigator.share && filesArray.length > 0 && navigator.canShare({ files: filesArray })) { await navigator.share({ files: filesArray, text: text }); } else { await navigator.share({ text: text }); }
                 setTimeout(() => { resetSystem(); }, 3000);
             } catch (e) { console.error(e); alert("Salvo no histórico! Texto copiado."); setTimeout(() => { resetSystem(); }, 1000); } finally { btn.innerHTML = originalBtn; }
         }
 
-        // --- CORE (Mantido) ---
-        function generateReceiptImage(v,c){return new Promise((r)=>{const d=document.getElementById('receipt-items');d.innerHTML='';const l=document.getElementById('receipt-logo');if(settings.logo){l.src=settings.logo;l.style.display='inline-block'}document.getElementById('receipt-store-name').innerText=settings.storeName;document.getElementById('receipt-client').innerText=c?`Cliente: ${c}`:'';document.getElementById('receipt-date').innerText=new Date().toLocaleString('pt-BR');cart.forEach(e=>{d.innerHTML+=`<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:5px;"><span>${e.qtd}x ${e.prodName} <small>(${e.size})</small></span><span>R$ ${e.total.toFixed(2).replace('.',',')}</span></div>`});document.getElementById('receipt-total').innerText=`R$ ${v.toFixed(2).replace('.',',')}`;html2canvas(document.getElementById('receipt-canvas')).then(c=>c.toBlob(b=>r(b))).catch(e=>r(null))})}
+        function generateReceiptImage(v,c,signal,balance){return new Promise((r)=>{
+            const d=document.getElementById('receipt-items');d.innerHTML='';
+            const l=document.getElementById('receipt-logo');if(settings.logo){l.src=settings.logo;l.style.display='inline-block'}
+            document.getElementById('receipt-store-name').innerText=settings.storeName;
+            document.getElementById('receipt-client').innerText=c?`Cliente: ${c}`:'';
+            document.getElementById('receipt-date').innerText=new Date().toLocaleString('pt-BR');
+            cart.forEach(e=>{d.innerHTML+=`<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:5px;"><span>${e.qtd}x ${e.prodName} <small>(${e.size})</small></span><span>R$ ${e.total.toFixed(2).replace('.',',')}</span></div>`});
+            document.getElementById('receipt-total').innerText=`R$ ${v.toFixed(2).replace('.',',')}`;
+            
+            // Exibir Sinal e Restante na Nota
+            const sigEl = document.getElementById('receipt-signal');
+            const balEl = document.getElementById('receipt-balance');
+            if(signal > 0) {
+                sigEl.innerText = `Sinal: R$ ${signal.toFixed(2).replace('.',',')}`; sigEl.style.display = 'block';
+                balEl.innerText = `Falta Pagar: R$ ${balance.toFixed(2).replace('.',',')}`; balEl.style.display = 'block';
+            } else {
+                sigEl.style.display = 'none'; balEl.style.display = 'none';
+            }
+
+            html2canvas(document.getElementById('receipt-canvas')).then(c=>c.toBlob(b=>r(b))).catch(e=>r(null))
+        })}
+        
+        // --- CORE (Mantido e Atualizado) ---
         function exportData(){const d="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({catalog,settings,orders}));const a=document.createElement('a');a.href=d;a.download="backup_completo.json";a.click()}
         function importData(i){const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){try{const d=JSON.parse(e.target.result);if(d.catalog){catalog=d.catalog;localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(catalog))}if(d.settings){settings=d.settings;localStorage.setItem('sublimacao_settings',JSON.stringify(settings))}if(d.orders){orders=d.orders;localStorage.setItem('sublimacao_orders',JSON.stringify(orders))}alert("Restaurado!");location.reload()}catch(r){alert("Erro backup")}};r.readAsText(f)}
         function applyTheme(c){const t=themes[c]||themes.purple;document.getElementById('navbar').className=`${t.bg} text-white shadow-lg sticky top-0 z-50 transition-colors duration-300`;document.querySelectorAll('.theme-text-color').forEach(e=>{Object.values(themes).forEach(h=>e.classList.remove(h.text));e.classList.add(t.text)});document.querySelectorAll('.theme-bg-color').forEach(e=>{Object.values(themes).forEach(h=>e.classList.remove(h.btn));e.classList.add(t.btn)});const b=document.getElementById('btn-add');if(b)b.className=`w-full ${t.btn} text-white font-bold h-[45px] rounded-lg shadow flex items-center justify-center gap-2 hover:opacity-90 transition`;document.getElementById('btn-save-settings').className=`w-full ${t.btn} text-white text-xs py-2 rounded font-bold`;}
@@ -294,8 +350,8 @@
         function calculatePreview(){const i=document.getElementById('product-select').value;const p=document.getElementById('preview-total');if(i===""){p.textContent="R$ 0,00";return}const s=document.getElementById('size-select');let u=0;if(s.options.length>0&&s.selectedIndex!==-1){u=parseFloat(s.value)}const q=parseInt(document.getElementById('quantity').value)||0;const d=parseFloat(document.getElementById('discount').value)||0;let t=u*q;if(d>0)t-=t*(d/100);p.textContent=`R$ ${t.toFixed(2).replace('.',',')}`}
         function addToCart(){const i=document.getElementById('product-select').value;if(i==="")return alert("Selecione produto!");const p=catalog[i];const s=document.getElementById('size-select');let z="Único";let u=0;if(p.prices&&Object.keys(p.prices).length>0){if(s.selectedIndex===-1)return alert("Selecione tamanho!");z=s.options[s.selectedIndex].dataset.sizeName;u=parseFloat(s.value)}const q=parseInt(document.getElementById('quantity').value)||1;const d=parseFloat(document.getElementById('discount').value)||0;let t=u*q;if(d>0)t-=t*(d/100);cart.push({prodName:p.name,size:z,qtd:q,unitPrice:u,discount:d,total:t,image:p.image});updateCartUI();document.getElementById('quantity').value="10";document.getElementById('discount').value="0";calculatePreview();setTimeout(()=>window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}),100)}
         function removeFromCart(i){cart.splice(i,1);updateCartUI()}
-        function resetSystem(){if(cart.length>0&&!confirm("Limpar pedido?"))return;cart=[];document.getElementById('product-select').value="";document.getElementById('client-name').value="";loadSizes();updateCartUI();calculatePreview();window.scrollTo({top:0,behavior:'smooth'})}
-        function updateCartUI(){const l=document.getElementById('cart-list');const f=document.getElementById('footer-actions');const s=document.getElementById('cart-section');const t=document.getElementById('grand-total');l.innerHTML='';let g=0;if(cart.length===0){s.classList.add('hidden');f.classList.add('hidden');document.body.style.paddingBottom="0";return}s.classList.remove('hidden');f.classList.remove('hidden');document.body.style.paddingBottom="100px";cart.forEach((e,i)=>{g+=e.total;l.innerHTML+=`<li class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center scale-in"><div class="flex items-center gap-3"><div class="bg-gray-100 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold text-gray-500">${i+1}</div><div><div class="font-bold text-gray-800 text-sm">${e.prodName} <span class="font-normal text-gray-500 text-xs">(${e.size})</span></div><div class="text-xs text-gray-500">${e.qtd}x R$ ${e.unitPrice.toFixed(2)}</div></div></div><div class="text-right"><div class="font-bold text-gray-700 text-sm">R$ ${e.total.toFixed(2).replace('.',',')}</div><button onclick="removeFromCart(${i})" class="text-[10px] text-red-400 p-1"><i class="fas fa-trash"></i></button></div></li>`});t.textContent=`R$ ${g.toFixed(2).replace('.',',')}`}
+        function resetSystem(){if(cart.length>0&&!confirm("Limpar pedido?"))return;cart=[];document.getElementById('product-select').value="";document.getElementById('client-name').value="";document.getElementById('down-payment').value="";loadSizes();updateCartUI();calculatePreview();window.scrollTo({top:0,behavior:'smooth'})}
+        function updateCartUI(){const l=document.getElementById('cart-list');const f=document.getElementById('footer-actions');const s=document.getElementById('cart-section');const t=document.getElementById('grand-total');l.innerHTML='';currentTotal=0;if(cart.length===0){s.classList.add('hidden');f.classList.add('hidden');document.body.style.paddingBottom="0";return}s.classList.remove('hidden');f.classList.remove('hidden');document.body.style.paddingBottom="100px";cart.forEach((e,i)=>{currentTotal+=e.total;l.innerHTML+=`<li class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center scale-in"><div class="flex items-center gap-3"><div class="bg-gray-100 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold text-gray-500">${i+1}</div><div><div class="font-bold text-gray-800 text-sm">${e.prodName} <span class="font-normal text-gray-500 text-xs">(${e.size})</span></div><div class="text-xs text-gray-500">${e.qtd}x R$ ${e.unitPrice.toFixed(2)}</div></div></div><div class="text-right"><div class="font-bold text-gray-700 text-sm">R$ ${e.total.toFixed(2).replace('.',',')}</div><button onclick="removeFromCart(${i})" class="text-[10px] text-red-400 p-1"><i class="fas fa-trash"></i></button></div></li>`});t.textContent=`R$ ${currentTotal.toFixed(2).replace('.',',')}`;calculateBalance()}
         document.getElementById('settings-logo-input').addEventListener('change',function(e){processImage(e.target.files[0],150,(b)=>{settings.logo=b})});document.getElementById('new-prod-file').addEventListener('change',function(e){processImage(e.target.files[0],500,(b)=>{document.getElementById('new-prod-img-base64').value=b;document.getElementById('form-img-preview').src=b;document.getElementById('form-img-preview').classList.remove('hidden')})});function processImage(f,mw,cb){if(!f)return;const r=new FileReader();r.onload=(e)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');const x=c.getContext('2d');let w=i.width,h=i.height;if(w>h){if(w>mw){h*=mw/w;w=mw}}else{if(h>mw){w*=mw/h;h=mw}}c.width=w;c.height=h;x.drawImage(i,0,0,w,h);cb(c.toDataURL('image/jpeg',0.7))};i.src=e.target.result};r.readAsDataURL(f)}function loadProductForEdit(i){const p=catalog[i];editingIndex=i;document.getElementById('new-prod-name').value=p.name;document.getElementById('new-prod-img-base64').value=p.image||"";let t="";if(p.prices){for(let[z,r]of Object.entries(p.prices)){t+=`${z}=${r.toFixed(2)}\n`}}document.getElementById('new-prod-sizes').value=t.trim();document.getElementById('form-title').textContent="Editar";const b=document.getElementById('btn-save-prod');b.textContent="Atualizar";document.getElementById('btn-cancel-edit').classList.remove('hidden');const ip=document.getElementById('form-img-preview');if(p.image){ip.src=p.image;ip.classList.remove('hidden')}else{ip.classList.add('hidden')}}function cancelEdit(){editingIndex=-1;document.getElementById('new-prod-name').value='';document.getElementById('new-prod-sizes').value='';document.getElementById('new-prod-img-base64').value='';document.getElementById('new-prod-file').value='';document.getElementById('form-img-preview').classList.add('hidden');document.getElementById('form-title').textContent="Novo";const b=document.getElementById('btn-save-prod');b.textContent="Salvar";document.getElementById('btn-cancel-edit').classList.add('hidden')}function saveProduct(){const n=document.getElementById('new-prod-name').value;const s=document.getElementById('new-prod-sizes').value;const i=document.getElementById('new-prod-img-base64').value;if(!n||!s)return alert("Preencha!");const p={};s.split('\n').forEach(l=>{if(l.includes('=')){let [k,v]=l.split('=');let val=parseFloat(v.replace('R$','').trim().replace(',','.'));if(!isNaN(val))p[k.trim()]=val}});const d={id:editingIndex>=0?catalog[editingIndex].id:Date.now(),name:n,prices:p,image:i};try{if(editingIndex>=0){catalog[editingIndex]=d;alert("Atualizado!")}else{catalog.push(d);alert("Criado!")}localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(catalog));renderAdminList();renderProductOptions();cancelEdit()}catch(e){alert("Memória!")}}function deleteProduct(i){if(confirm("Apagar?")){catalog.splice(i,1);localStorage.setItem('sublimacao_catalog_v3',JSON.stringify(catalog));renderAdminList();renderProductOptions();cancelEdit()}}function renderAdminList(){const l=document.getElementById('product-list');l.innerHTML='';catalog.forEach((p,i)=>{l.innerHTML+=`<li class="flex justify-between items-center py-3 border-b text-sm"><div class="flex items-center gap-3">${p.image?`<img src="${p.image}" class="w-10 h-10 rounded object-cover border">`:'<div class="w-10 h-10 bg-gray-200 rounded"></div>'}<span class="font-medium">${p.name}</span></div><div class="flex gap-2"><button onclick="loadProductForEdit(${i})" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button><button onclick="deleteProduct(${i})" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button></div></li>`})}function renderProductOptions(){const s=document.getElementById('product-select');s.innerHTML='<option value="">Selecione...</option>';catalog.forEach((p,i)=>s.add(new Option(p.name,i)))}function toggleAdmin(){const a=document.getElementById('admin-view');if(a.classList.contains('hidden')){if(prompt("Senha:")===settings.password){a.classList.remove('hidden')}}else{a.classList.add('hidden')}}
 
         init();
