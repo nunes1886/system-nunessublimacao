@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gerador & CRM Pro v18</title>
+    <title>Gerador & CRM Pro v18.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -27,7 +27,7 @@
                 <img id="app-logo" src="" class="hidden w-10 h-10 rounded-full bg-white object-contain p-0.5 border-2 border-white">
                 <h1 class="text-lg font-bold leading-tight" id="display-store-name">Sua Loja<br><span class="text-xs font-normal opacity-80">Gestão Financeira</span></h1>
             </div>
-            <button onclick="toggleAdmin()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded border border-white/40 backdrop-blur-sm">
+            <button onclick="openLoginModal()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded border border-white/40 backdrop-blur-sm">
                 <i class="fas fa-cog"></i>
             </button>
         </div>
@@ -241,7 +241,6 @@
             document.getElementById('remaining-balance').innerText = `R$ ${balanceDisplay.toFixed(2).replace('.', ',')}`;
         }
 
-        // --- DASHBOARD COM EDITAR/EXCLUIR ---
         function renderDashboard() {
             const list = document.getElementById('history-list'); list.innerHTML = '';
             const filterValue = document.getElementById('dash-month-filter').value;
@@ -303,7 +302,6 @@
             }
         }
 
-        // --- FUNÇÕES DE EXCLUIR E EDITAR ---
         function deleteOrderHistory(id) {
             if(confirm("Tem certeza que deseja apagar apenas este pedido?")) {
                 orders = orders.filter(o => o.id !== id);
@@ -315,18 +313,15 @@
         function editOrderHistory(id) {
             const order = orders.find(o => o.id === id);
             if(!order) return;
-            if(!order.cart) { // Fallback para pedidos feitos na v17 ou antes
+            if(!order.cart) { 
                 alert("Este pedido foi feito em uma versão anterior e não contém os itens salvos para edição.");
                 return;
             }
-            // Carrega dados pro carrinho
             cart = JSON.parse(JSON.stringify(order.cart));
             document.getElementById('client-name').value = order.client || "";
             document.getElementById('down-payment').value = order.signal || "";
-            editingOrderId = id; // Marca que estamos atualizando um pedido
-            
+            editingOrderId = id; 
             document.getElementById('btn-finish-text').innerText = "Atualizar Pedido";
-            
             switchTab('sales');
             updateCartUI();
         }
@@ -344,7 +339,6 @@
                 cart.forEach((item) => { grandTotal += item.total; itemsText += `${item.qtd}x ${item.prodName} (${item.size})\n`; });
                 const balanceVal = grandTotal - signalVal;
                 
-                // NOVO: SALVANDO CARRINHO (.cart) DENTRO DO PEDIDO E VERIFICANDO SE É EDIÇÃO
                 const newOrder = { 
                     id: editingOrderId || Date.now(), 
                     date: new Date().toISOString(), 
@@ -353,21 +347,21 @@
                     signal: signalVal, 
                     itemsCount: cart.length, 
                     status: 'open',
-                    cart: JSON.parse(JSON.stringify(cart)) // Salva os itens para edição futura
+                    cart: JSON.parse(JSON.stringify(cart)) 
                 };
 
                 if (editingOrderId) {
                     const index = orders.findIndex(o => o.id === editingOrderId);
                     if(index > -1) {
-                        newOrder.date = orders[index].date; // Mantém a data original
-                        newOrder.status = orders[index].status; // Mantém o status original
-                        orders[index] = newOrder; // Atualiza
+                        newOrder.date = orders[index].date; 
+                        newOrder.status = orders[index].status; 
+                        orders[index] = newOrder; 
                     }
                 } else {
-                    orders.push(newOrder); // Cria novo
+                    orders.push(newOrder); 
                 }
                 localStorage.setItem('sublimacao_orders', JSON.stringify(orders));
-                editingOrderId = null; // Limpa status de edição
+                editingOrderId = null; 
                 
                 let text = `*ORÇAMENTO - ${settings.storeName.toUpperCase()}* 🛍️\n`;
                 if(clientName) text += `Cliente: ${clientName}\n`;
@@ -412,7 +406,6 @@
             html2canvas(document.getElementById('receipt-canvas')).then(c=>c.toBlob(b=>r(b))).catch(e=>r(null))
         })}
         
-        // ADMIN E LOGIN (Minificados para espaço)
         function openLoginModal(){const a=document.getElementById('admin-view');if(!a.classList.contains('hidden')){a.classList.add('hidden');return}document.getElementById('login-modal').classList.remove('hidden');document.getElementById('login-pass').value='';document.getElementById('login-pass').focus()}
         function closeLogin(){document.getElementById('login-modal').classList.add('hidden')}
         function checkLogin(){const p=document.getElementById('login-pass').value;if(p===settings.password){document.getElementById('login-modal').classList.add('hidden');document.getElementById('admin-view').classList.remove('hidden')}else{alert("Senha incorreta!")}}
