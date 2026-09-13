@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gerador & CRM Pro v19.10</title>
+    <title>Gerador & CRM Pro v19.11</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -151,6 +151,7 @@
             </div>
         </div>
 
+        <!-- TELA DASHBOARD -->
         <div id="view-dashboard" class="hidden fade-in">
             <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 mb-4 flex justify-between items-center">
                 <label class="text-sm font-bold text-gray-600 flex items-center gap-2"><i class="far fa-calendar-alt"></i> Período:</label>
@@ -170,14 +171,17 @@
             </div>
         </div>
 
-        <!-- MODAL DE VISUALIZAÇÃO DA NOTA FISCAL -->
+        <!-- RODAPÉ INTERATIVO DO DEV -->
+        <div onclick="openDevModal()" class="text-center mt-12 mb-6 opacity-60 hover:opacity-100 transition-opacity duration-300 cursor-pointer">
+            <p class="text-[10px] text-gray-400 font-medium flex justify-center items-center gap-1">
+                Desenvolvido por <span class="font-bold text-gray-500">Gledson Nunes</span> <span class="text-blue-500 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 text-[10px] shadow-sm font-mono">&lt;/&gt;</span>
+            </p>
+        </div>
+
+        <!-- MODAIS DE VISUALIZAÇÃO E LOGIN -->
         <div id="receipt-modal" class="hidden fixed inset-0 bg-black/80 z-[80] flex flex-col items-center justify-center backdrop-blur-sm p-4">
-            <div class="flex justify-end w-full max-w-md mb-2">
-                <button onclick="closeReceiptModal()" class="text-white text-3xl font-bold p-2">&times;</button>
-            </div>
-            <div class="bg-white rounded-lg overflow-hidden max-w-md w-full relative shadow-2xl scale-in flex justify-center p-2">
-                <img id="receipt-modal-img" src="" class="w-auto h-auto max-h-[65vh] object-contain border border-gray-200">
-            </div>
+            <div class="flex justify-end w-full max-w-md mb-2"><button onclick="closeReceiptModal()" class="text-white text-3xl font-bold p-2">&times;</button></div>
+            <div class="bg-white rounded-lg overflow-hidden max-w-md w-full relative shadow-2xl scale-in flex justify-center p-2"><img id="receipt-modal-img" src="" class="w-auto h-auto max-h-[65vh] object-contain border border-gray-200"></div>
             <div class="flex gap-4 mt-6 w-full max-w-md">
                 <button onclick="downloadFromModal()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold flex justify-center items-center gap-2 shadow-lg transition"><i class="fas fa-download"></i> Baixar</button>
                 <button onclick="shareFromModal()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold flex justify-center items-center gap-2 shadow-lg transition"><i class="fab fa-whatsapp text-xl"></i> Enviar</button>
@@ -186,6 +190,31 @@
 
         <div id="login-modal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center backdrop-blur-sm">
             <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 scale-in"><div class="text-center mb-4"><div class="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-lock text-purple-600"></i></div><h3 class="text-lg font-bold text-gray-800">Acesso Restrito</h3><p class="text-xs text-gray-500">Digite a senha</p></div><input type="password" id="login-pass" placeholder="Senha" class="w-full p-3 border border-gray-300 rounded-lg mb-4 text-center text-lg outline-none focus:ring-2 focus:ring-purple-500"><div class="flex gap-2"><button onclick="closeLogin()" class="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg font-bold text-sm">Cancelar</button><button onclick="checkLogin()" class="flex-1 bg-purple-600 text-white py-2 rounded-lg font-bold text-sm">Entrar</button></div></div>
+        </div>
+
+        <!-- MODAL DO DESENVOLVEDOR (PORTFÓLIO) -->
+        <div id="dev-modal" class="hidden fixed inset-0 bg-black/60 z-[90] flex items-center justify-center backdrop-blur-sm p-4">
+            <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-xs scale-in relative">
+                <button onclick="closeDevModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition"><i class="fas fa-times text-xl"></i></button>
+                <div class="text-center mb-6">
+                    <div class="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 border border-blue-100 shadow-sm">
+                        <i class="fas fa-code text-2xl text-blue-500"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800">Gledson Nunes</h3>
+                    <p class="text-xs text-gray-500 mt-1">Desenvolvedor do Sistema</p>
+                </div>
+                <div class="space-y-3">
+                    <a href="https://wa.me/5579999999999" target="_blank" class="flex items-center gap-3 p-3 bg-green-50 rounded-xl text-green-700 hover:bg-green-100 transition border border-green-100">
+                        <i class="fab fa-whatsapp text-xl"></i><span class="font-bold text-sm">WhatsApp</span>
+                    </a>
+                    <a href="https://instagram.com/seu_insta_aqui" target="_blank" class="flex items-center gap-3 p-3 bg-pink-50 rounded-xl text-pink-700 hover:bg-pink-100 transition border border-pink-100">
+                        <i class="fab fa-instagram text-xl"></i><span class="font-bold text-sm">Instagram</span>
+                    </a>
+                    <a href="mailto:seuemail@exemplo.com" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl text-gray-700 hover:bg-gray-100 transition border border-gray-200">
+                        <i class="fas fa-envelope text-xl"></i><span class="font-bold text-sm">E-mail</span>
+                    </a>
+                </div>
+            </div>
         </div>
 
         <div id="admin-view" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-end sm:items-center justify-center backdrop-blur-sm">
@@ -268,10 +297,7 @@
         let catalog=[], cart=[], orders=[], editingIndex=-1, editingOrderId=null; 
         let settings={password:"1234",logo:"",storeName:"Nunes Sublimação",theme:"purple",cnpj:"",phone:"",favicon:""};
         let currentTotal = 0;
-        
-        // VARIÁVEIS PARA O MODAL DA NOTA FISCAL
-        let tempReceiptBlob = null;
-        let tempReceiptOrder = null;
+        let tempReceiptBlob = null, tempReceiptOrder = null;
 
         function init(){
             try{ const c=localStorage.getItem('sublimacao_catalog_v3'); if(c)catalog=JSON.parse(c)||[]; const s=localStorage.getItem('sublimacao_settings'); if(s)settings={...settings,...JSON.parse(s)}; const o=localStorage.getItem('sublimacao_orders'); if(o)orders=JSON.parse(o)||[]; applySettings(); }catch(e){console.log(e)}
@@ -279,17 +305,13 @@
             renderProductOptions(); renderAdminList(); renderDashboard();
         }
 
-        function updateFaviconDOM(base64Str) {
-            if(!base64Str) return; let link = document.querySelector("link[rel~='icon']"); if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); } link.href = base64Str;
-        }
+        // JS DO MODAL DO DEV
+        function openDevModal() { document.getElementById('dev-modal').classList.remove('hidden'); }
+        function closeDevModal() { document.getElementById('dev-modal').classList.add('hidden'); }
 
+        function updateFaviconDOM(base64Str) { if(!base64Str) return; let link = document.querySelector("link[rel~='icon']"); if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); } link.href = base64Str; }
         function switchTab(tab) { document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active')); document.getElementById('tab-'+tab).classList.add('active'); if(tab==='sales'){ document.getElementById('view-sales').classList.remove('hidden'); document.getElementById('view-dashboard').classList.add('hidden'); } else { document.getElementById('view-sales').classList.add('hidden'); document.getElementById('view-dashboard').classList.remove('hidden'); renderDashboard(); } }
-
-        function calculateBalance() {
-            const globalDiscount = parseFloat(document.getElementById('global-discount').value) || 0; let finalTotal = currentTotal - globalDiscount; if(finalTotal < 0) finalTotal = 0;
-            const signal = parseFloat(document.getElementById('down-payment').value) || 0; const balance = finalTotal - signal; const balanceDisplay = balance > 0 ? balance : 0;
-            document.getElementById('grand-total').innerText = `R$ ${finalTotal.toFixed(2).replace('.', ',')}`; document.getElementById('remaining-balance').innerText = `R$ ${balanceDisplay.toFixed(2).replace('.', ',')}`;
-        }
+        function calculateBalance() { const globalDiscount = parseFloat(document.getElementById('global-discount').value) || 0; let finalTotal = currentTotal - globalDiscount; if(finalTotal < 0) finalTotal = 0; const signal = parseFloat(document.getElementById('down-payment').value) || 0; const balance = finalTotal - signal; const balanceDisplay = balance > 0 ? balance : 0; document.getElementById('grand-total').innerText = `R$ ${finalTotal.toFixed(2).replace('.', ',')}`; document.getElementById('remaining-balance').innerText = `R$ ${balanceDisplay.toFixed(2).replace('.', ',')}`; }
 
         function renderDashboard() {
             const list = document.getElementById('history-list'); list.innerHTML = ''; const filterValue = document.getElementById('dash-month-filter').value; if (!filterValue) return;
@@ -308,25 +330,12 @@
             document.getElementById('empty-history-msg').classList.toggle('hidden', hasItems); document.getElementById('dash-total-quotes').innerText = totalQuotes; document.getElementById('dash-total-sales').innerText = totalSales; document.getElementById('dash-signals').innerText = `R$ ${totalSignals.toFixed(2).replace('.',',')}`; document.getElementById('dash-revenue').innerText = `R$ ${realRevenue.toFixed(2).replace('.',',')}`; document.getElementById('dash-pending').innerText = `R$ ${pendingRevenue.toFixed(2).replace('.',',')}`;
         }
         
-        // FUNÇÕES DO NOVO MODAL DE HISTÓRICO
         async function viewReceiptHistory(id) {
             const order = orders.find(o => o.id === id); if(!order) return;
-            // Salva o estado atual caso o usuário estivesse fazendo uma venda
-            const oldCart = [...cart]; cart = order.cart;
-            tempReceiptOrder = order;
-            
-            tempReceiptBlob = await generateReceiptImage(
-                order.subtotal || order.total, order.total, order.client, order.clientID || "", 
-                order.signal || 0, (order.total - (order.signal || 0)), order.globalDiscount || 0, 
-                order.notes || "", order.docType || 'orcamento'
-            );
-            
-            cart = oldCart; // Restaura estado
-            
-            if(tempReceiptBlob) {
-                document.getElementById('receipt-modal-img').src = URL.createObjectURL(tempReceiptBlob);
-                document.getElementById('receipt-modal').classList.remove('hidden');
-            }
+            const oldCart = [...cart]; cart = order.cart; tempReceiptOrder = order;
+            tempReceiptBlob = await generateReceiptImage(order.subtotal || order.total, order.total, order.client, order.clientID || "", order.signal || 0, (order.total - (order.signal || 0)), order.globalDiscount || 0, order.notes || "", order.docType || 'orcamento');
+            cart = oldCart; 
+            if(tempReceiptBlob) { document.getElementById('receipt-modal-img').src = URL.createObjectURL(tempReceiptBlob); document.getElementById('receipt-modal').classList.remove('hidden'); }
         }
         function closeReceiptModal() { document.getElementById('receipt-modal').classList.add('hidden'); tempReceiptBlob = null; tempReceiptOrder = null; }
         
@@ -344,10 +353,7 @@
             let text = `*${docTitle} - ${settings.storeName.toUpperCase()}* 🛍️\n`;
             if(tempReceiptOrder.client) text += `Cliente: ${tempReceiptOrder.client}\n`;
             const filesArray = [new File([tempReceiptBlob], "documento.png", { type: "image/png" })];
-            try {
-                if (navigator.share && navigator.canShare({ files: filesArray })) { await navigator.share({ files: filesArray, text: text }); } 
-                else { await navigator.share({ text: text }); }
-            } catch(e) { console.log(e); }
+            try { if (navigator.share && navigator.canShare({ files: filesArray })) { await navigator.share({ files: filesArray, text: text }); } else { await navigator.share({ text: text }); } } catch(e) { console.log(e); }
             closeReceiptModal();
         }
 
@@ -368,7 +374,7 @@
             try {
                 const clientName = document.getElementById('client-name').value.trim() || ""; const clientID = document.getElementById('client-id-number').value.trim() || "";
                 const orderNotes = document.getElementById('order-notes').value.trim(); 
-                const docTypeVal = document.querySelector('input[name="doc-type"]:checked').value; // SALVA O TIPO
+                const docTypeVal = document.querySelector('input[name="doc-type"]:checked').value; 
                 let subtotal = 0; let itemsText = ""; cart.forEach((item) => { subtotal += item.total; itemsText += `${item.qtd}x ${item.prodName} (${item.size})\n`; });
                 const globalDiscountVal = parseFloat(document.getElementById('global-discount').value) || 0; let finalTotal = subtotal - globalDiscountVal; if(finalTotal < 0) finalTotal = 0;
                 const signalVal = parseFloat(document.getElementById('down-payment').value) || 0; const balanceVal = finalTotal - signalVal;
