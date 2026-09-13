@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gerador & CRM Pro v19.9</title>
+    <title>Gerador & CRM Pro v19.10</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -93,7 +93,6 @@
                 </div>
                 <ul id="cart-list" class="space-y-2 mb-4"></ul>
 
-                <!-- NOVO CAMPO: OBSERVAÇÕES -->
                 <div class="mb-4">
                     <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1"><i class="fas fa-comment-dots"></i> Observações (Opcional)</label>
                     <textarea id="order-notes" rows="2" placeholder="Ex: Entrega dia 20, arte aprovada..." class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none resize-none"></textarea>
@@ -171,6 +170,20 @@
             </div>
         </div>
 
+        <!-- MODAL DE VISUALIZAÇÃO DA NOTA FISCAL -->
+        <div id="receipt-modal" class="hidden fixed inset-0 bg-black/80 z-[80] flex flex-col items-center justify-center backdrop-blur-sm p-4">
+            <div class="flex justify-end w-full max-w-md mb-2">
+                <button onclick="closeReceiptModal()" class="text-white text-3xl font-bold p-2">&times;</button>
+            </div>
+            <div class="bg-white rounded-lg overflow-hidden max-w-md w-full relative shadow-2xl scale-in flex justify-center p-2">
+                <img id="receipt-modal-img" src="" class="w-auto h-auto max-h-[65vh] object-contain border border-gray-200">
+            </div>
+            <div class="flex gap-4 mt-6 w-full max-w-md">
+                <button onclick="downloadFromModal()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold flex justify-center items-center gap-2 shadow-lg transition"><i class="fas fa-download"></i> Baixar</button>
+                <button onclick="shareFromModal()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold flex justify-center items-center gap-2 shadow-lg transition"><i class="fab fa-whatsapp text-xl"></i> Enviar</button>
+            </div>
+        </div>
+
         <div id="login-modal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center backdrop-blur-sm">
             <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 scale-in"><div class="text-center mb-4"><div class="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-lock text-purple-600"></i></div><h3 class="text-lg font-bold text-gray-800">Acesso Restrito</h3><p class="text-xs text-gray-500">Digite a senha</p></div><input type="password" id="login-pass" placeholder="Senha" class="w-full p-3 border border-gray-300 rounded-lg mb-4 text-center text-lg outline-none focus:ring-2 focus:ring-purple-500"><div class="flex gap-2"><button onclick="closeLogin()" class="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg font-bold text-sm">Cancelar</button><button onclick="checkLogin()" class="flex-1 bg-purple-600 text-white py-2 rounded-lg font-bold text-sm">Entrar</button></div></div>
         </div>
@@ -213,7 +226,7 @@
         </div>
     </div>
 
-    <!-- CANVAS DA NOTA -->
+    <!-- CANVAS INVISÍVEL DA NOTA -->
     <div id="receipt-canvas">
         <div style="text-align: center; margin-bottom: 20px;">
             <img id="receipt-logo" src="" style="width: 60px; margin-bottom: 5px; display: none;">
@@ -231,7 +244,6 @@
         
         <div id="receipt-items" style="margin: 15px 0;"></div>
         
-        <!-- NOVO: CONTAINER DE OBSERVAÇÕES NA NOTA -->
         <div id="receipt-notes-container" style="display:none; margin-bottom: 15px; font-size: 12px; color: #555; background: #f9f9f9; padding: 10px; border-radius: 4px; border-left: 3px solid #7e22ce;">
             <strong style="color: #333;">Observações:</strong><br>
             <span id="receipt-notes-text" style="white-space: pre-wrap;"></span>
@@ -256,6 +268,10 @@
         let catalog=[], cart=[], orders=[], editingIndex=-1, editingOrderId=null; 
         let settings={password:"1234",logo:"",storeName:"Nunes Sublimação",theme:"purple",cnpj:"",phone:"",favicon:""};
         let currentTotal = 0;
+        
+        // VARIÁVEIS PARA O MODAL DA NOTA FISCAL
+        let tempReceiptBlob = null;
+        let tempReceiptOrder = null;
 
         function init(){
             try{ const c=localStorage.getItem('sublimacao_catalog_v3'); if(c)catalog=JSON.parse(c)||[]; const s=localStorage.getItem('sublimacao_settings'); if(s)settings={...settings,...JSON.parse(s)}; const o=localStorage.getItem('sublimacao_orders'); if(o)orders=JSON.parse(o)||[]; applySettings(); }catch(e){console.log(e)}
@@ -286,18 +302,62 @@
                     totalSignals += signal; realRevenue += signal; if (order.status === 'closed') { totalSales++; realRevenue += balance; } else { pendingRevenue += balance; }
                     const statusColor = order.status === 'closed' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-600 border-yellow-100'; const statusIcon = order.status === 'closed' ? 'fa-check' : 'fa-clock'; const client = order.client || 'Cliente não ident.';
                     const balanceHtml = (order.status !== 'closed' && balance > 0) ? `<div class="text-[10px] text-red-500 font-bold mt-0.5">Falta: R$ ${balance.toFixed(2).replace('.',',')}</div>` : '';
-                    list.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-gray-50 transition border-b border-gray-100"><div><div class="font-bold text-gray-700">${client}</div><div class="text-xs text-gray-400">${new Date(order.date).toLocaleDateString('pt-BR')} • ${order.itemsCount} itens</div><div class="text-sm font-bold mt-1 text-gray-800">R$ ${order.total.toFixed(2).replace('.',',')}</div>${balanceHtml}</div><div class="flex flex-col items-end gap-2"><button onclick="toggleOrderStatus(${order.id})" class="border px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 ${statusColor}"><i class="fas ${statusIcon}"></i> ${order.status === 'closed' ? 'Vendido' : 'Pendente'}</button><div class="flex gap-3 text-gray-400 mt-1"><button onclick="editOrderHistory(${order.id})" class="hover:text-blue-500 transition" title="Editar"><i class="fas fa-edit"></i></button><button onclick="deleteOrderHistory(${order.id})" class="hover:text-red-500 transition" title="Excluir"><i class="fas fa-trash"></i></button></div></div></li>`;
+                    list.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-gray-50 transition border-b border-gray-100"><div><div class="font-bold text-gray-700">${client}</div><div class="text-xs text-gray-400">${new Date(order.date).toLocaleDateString('pt-BR')} • ${order.itemsCount} itens</div><div class="text-sm font-bold mt-1 text-gray-800">R$ ${order.total.toFixed(2).replace('.',',')}</div>${balanceHtml}</div><div class="flex flex-col items-end gap-2"><button onclick="toggleOrderStatus(${order.id})" class="border px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 ${statusColor}"><i class="fas ${statusIcon}"></i> ${order.status === 'closed' ? 'Vendido' : 'Pendente'}</button><div class="flex gap-3 text-gray-400 mt-1"><button onclick="viewReceiptHistory(${order.id})" class="hover:text-purple-500 transition" title="Ver Nota"><i class="fas fa-file-invoice-dollar"></i></button><button onclick="editOrderHistory(${order.id})" class="hover:text-blue-500 transition" title="Editar"><i class="fas fa-edit"></i></button><button onclick="deleteOrderHistory(${order.id})" class="hover:text-red-500 transition" title="Excluir"><i class="fas fa-trash"></i></button></div></div></li>`;
                 }
             });
             document.getElementById('empty-history-msg').classList.toggle('hidden', hasItems); document.getElementById('dash-total-quotes').innerText = totalQuotes; document.getElementById('dash-total-sales').innerText = totalSales; document.getElementById('dash-signals').innerText = `R$ ${totalSignals.toFixed(2).replace('.',',')}`; document.getElementById('dash-revenue').innerText = `R$ ${realRevenue.toFixed(2).replace('.',',')}`; document.getElementById('dash-pending').innerText = `R$ ${pendingRevenue.toFixed(2).replace('.',',')}`;
         }
         
+        // FUNÇÕES DO NOVO MODAL DE HISTÓRICO
+        async function viewReceiptHistory(id) {
+            const order = orders.find(o => o.id === id); if(!order) return;
+            // Salva o estado atual caso o usuário estivesse fazendo uma venda
+            const oldCart = [...cart]; cart = order.cart;
+            tempReceiptOrder = order;
+            
+            tempReceiptBlob = await generateReceiptImage(
+                order.subtotal || order.total, order.total, order.client, order.clientID || "", 
+                order.signal || 0, (order.total - (order.signal || 0)), order.globalDiscount || 0, 
+                order.notes || "", order.docType || 'orcamento'
+            );
+            
+            cart = oldCart; // Restaura estado
+            
+            if(tempReceiptBlob) {
+                document.getElementById('receipt-modal-img').src = URL.createObjectURL(tempReceiptBlob);
+                document.getElementById('receipt-modal').classList.remove('hidden');
+            }
+        }
+        function closeReceiptModal() { document.getElementById('receipt-modal').classList.add('hidden'); tempReceiptBlob = null; tempReceiptOrder = null; }
+        
+        function downloadFromModal() {
+            if(!tempReceiptBlob) return;
+            const url = window.URL.createObjectURL(tempReceiptBlob); const a = document.createElement('a'); a.style.display = 'none'; a.href = url;
+            const safeName = tempReceiptOrder.client ? tempReceiptOrder.client.replace(/\s+/g, '_') : 'Cliente';
+            a.download = `${(tempReceiptOrder.docType === 'recibo' ? 'Recibo' : 'Orcamento')}_${safeName}.png`;
+            document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); document.body.removeChild(a); closeReceiptModal();
+        }
+
+        async function shareFromModal() {
+            if(!tempReceiptBlob) return;
+            const docTitle = tempReceiptOrder.docType === 'recibo' ? 'RECIBO' : 'ORÇAMENTO';
+            let text = `*${docTitle} - ${settings.storeName.toUpperCase()}* 🛍️\n`;
+            if(tempReceiptOrder.client) text += `Cliente: ${tempReceiptOrder.client}\n`;
+            const filesArray = [new File([tempReceiptBlob], "documento.png", { type: "image/png" })];
+            try {
+                if (navigator.share && navigator.canShare({ files: filesArray })) { await navigator.share({ files: filesArray, text: text }); } 
+                else { await navigator.share({ text: text }); }
+            } catch(e) { console.log(e); }
+            closeReceiptModal();
+        }
+
         function toggleOrderStatus(id) { const orderIndex = orders.findIndex(o => o.id === id); if (orderIndex !== -1) { orders[orderIndex].status = orders[orderIndex].status === 'closed' ? 'open' : 'closed'; localStorage.setItem('sublimacao_orders', JSON.stringify(orders)); renderDashboard(); } }
         function deleteOrderHistory(id) { if(confirm("Tem certeza que deseja apagar apenas este pedido?")) { orders = orders.filter(o => o.id !== id); localStorage.setItem('sublimacao_orders', JSON.stringify(orders)); renderDashboard(); } }
         function editOrderHistory(id) {
             const order = orders.find(o => o.id === id); if(!order) return; if(!order.cart) { alert("Este pedido foi feito em uma versão anterior e não contém os itens salvos para edição."); return; }
             cart = JSON.parse(JSON.stringify(order.cart)); document.getElementById('client-name').value = order.client || ""; document.getElementById('client-id-number').value = order.clientID || ""; document.getElementById('down-payment').value = order.signal || ""; document.getElementById('global-discount').value = order.globalDiscount || "";
-            document.getElementById('order-notes').value = order.notes || ""; // CARREGA A OBSERVAÇÃO
+            document.getElementById('order-notes').value = order.notes || ""; 
+            if(order.docType === 'recibo') { document.querySelector('input[value="recibo"]').checked = true; } else { document.querySelector('input[value="orcamento"]').checked = true; }
             editingOrderId = id; document.getElementById('btn-finish-text').innerText = "Atualizar"; switchTab('sales'); updateCartUI();
         }
         function clearHistory() { if(confirm("Apagar todo o histórico?")) { orders = []; localStorage.setItem('sublimacao_orders', JSON.stringify(orders)); renderDashboard(); } }
@@ -307,31 +367,30 @@
             let btn, originalBtnHTML; if(action === 'download') { btn = document.getElementById('btn-download'); originalBtnHTML = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; } else { btn = document.getElementById('btn-finish'); originalBtnHTML = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...'; }
             try {
                 const clientName = document.getElementById('client-name').value.trim() || ""; const clientID = document.getElementById('client-id-number').value.trim() || "";
-                const orderNotes = document.getElementById('order-notes').value.trim(); // PEGA O TEXTO DA OBSERVAÇÃO
+                const orderNotes = document.getElementById('order-notes').value.trim(); 
+                const docTypeVal = document.querySelector('input[name="doc-type"]:checked').value; // SALVA O TIPO
                 let subtotal = 0; let itemsText = ""; cart.forEach((item) => { subtotal += item.total; itemsText += `${item.qtd}x ${item.prodName} (${item.size})\n`; });
                 const globalDiscountVal = parseFloat(document.getElementById('global-discount').value) || 0; let finalTotal = subtotal - globalDiscountVal; if(finalTotal < 0) finalTotal = 0;
                 const signalVal = parseFloat(document.getElementById('down-payment').value) || 0; const balanceVal = finalTotal - signalVal;
                 
-                const newOrder = { id: editingOrderId || Date.now(), date: new Date().toISOString(), client: clientName, clientID: clientID, notes: orderNotes, total: finalTotal, subtotal: subtotal, globalDiscount: globalDiscountVal, signal: signalVal, itemsCount: cart.length, status: 'open', cart: JSON.parse(JSON.stringify(cart)) };
+                const newOrder = { id: editingOrderId || Date.now(), date: new Date().toISOString(), client: clientName, clientID: clientID, notes: orderNotes, docType: docTypeVal, total: finalTotal, subtotal: subtotal, globalDiscount: globalDiscountVal, signal: signalVal, itemsCount: cart.length, status: 'open', cart: JSON.parse(JSON.stringify(cart)) };
                 if (editingOrderId) { const index = orders.findIndex(o => o.id === editingOrderId); if(index > -1) { newOrder.date = orders[index].date; newOrder.status = orders[index].status; orders[index] = newOrder; } } else { orders.push(newOrder); }
                 localStorage.setItem('sublimacao_orders', JSON.stringify(orders)); editingOrderId = null; 
                 
-                const docType = document.querySelector('input[name="doc-type"]:checked').value;
-                const docTitle = docType === 'recibo' ? 'RECIBO' : 'ORÇAMENTO';
-
-                const receiptBlob = await generateReceiptImage(subtotal, finalTotal, clientName, clientID, signalVal, balanceVal, globalDiscountVal, orderNotes);
+                const docTitle = docTypeVal === 'recibo' ? 'RECIBO' : 'ORÇAMENTO';
+                const receiptBlob = await generateReceiptImage(subtotal, finalTotal, clientName, clientID, signalVal, balanceVal, globalDiscountVal, orderNotes, docTypeVal);
 
                 if (action === 'download') {
                     if (receiptBlob) {
                         const url = window.URL.createObjectURL(receiptBlob); const a = document.createElement('a'); a.style.display = 'none'; a.href = url;
                         const safeName = clientName ? clientName.replace(/\s+/g, '_') : 'Cliente';
-                        a.download = `${docType === 'recibo' ? 'Recibo' : 'Orcamento'}_${safeName}.png`;
+                        a.download = `${docTypeVal === 'recibo' ? 'Recibo' : 'Orcamento'}_${safeName}.png`;
                         document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); document.body.removeChild(a);
                     }
                 } else {
                     let text = `*${docTitle} - ${settings.storeName.toUpperCase()}* 🛍️\n`;
                     if(clientName) text += `Cliente: ${clientName}\n`; if(clientID) text += `CPF/CNPJ: ${clientID}\n`; text += `\n${itemsText}\n`;
-                    if(orderNotes) text += `*Observações:*\n${orderNotes}\n\n`; // OBSERVAÇÃO NO WHATSAPP
+                    if(orderNotes) text += `*Observações:*\n${orderNotes}\n\n`; 
                     if(globalDiscountVal > 0){ text += `Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}\n`; text += `Desconto: -R$ ${globalDiscountVal.toFixed(2).replace('.', ',')}\n`; }
                     text += `*TOTAL: R$ ${finalTotal.toFixed(2).replace('.', ',')}*`;
                     if(signalVal > 0) { text += `\n✅ Sinal / Pago: R$ ${signalVal.toFixed(2).replace('.', ',')}`; text += `\n🔴 *Falta Pagar: R$ ${balanceVal.toFixed(2).replace('.', ',')}*`; }
@@ -351,11 +410,11 @@
             loadSizes(); updateCartUI(); calculatePreview(); window.scrollTo({top:0,behavior:'smooth'})
         }
 
-        function generateReceiptImage(subtotal, finalTotal, c, cid, signal, balance, globalDiscount, notes){return new Promise((r)=>{
+        function generateReceiptImage(subtotal, finalTotal, c, cid, signal, balance, globalDiscount, notes, docTypeOverride){return new Promise((r)=>{
             const d=document.getElementById('receipt-items'); d.innerHTML='';
             const l=document.getElementById('receipt-logo'); if(settings.logo){l.src=settings.logo;l.style.display='inline-block'}
             
-            const docType = document.querySelector('input[name="doc-type"]:checked').value;
+            const docType = docTypeOverride || document.querySelector('input[name="doc-type"]:checked').value;
             document.getElementById('receipt-title').innerText = docType === 'recibo' ? 'RECIBO' : 'ORÇAMENTO';
             
             document.getElementById('receipt-store-name').innerText=settings.storeName;
@@ -371,18 +430,9 @@
                 d.innerHTML += `<div style="display:flex; justify-content:space-between; align-items: center; font-size:14px; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid #f0f0f0;"><div style="display:flex; align-items:center;">${imgHtml}<div style="text-align: left; line-height: 1.2;"><span style="font-weight:bold; color:#333;">${e.qtd}x ${e.prodName}</span><br><small style="color:#888;">(${e.size})</small></div></div><span style="font-weight:bold; color:#444;">R$ ${e.total.toFixed(2).replace('.',',')}</span></div>`;
             });
 
-            // LÓGICA DAS OBSERVAÇÕES NA NOTA
-            const rNotesContainer = document.getElementById('receipt-notes-container');
-            const rNotesText = document.getElementById('receipt-notes-text');
-            if(notes) {
-                rNotesText.innerText = notes;
-                rNotesContainer.style.display = 'block';
-                // Pega a cor principal configurada e aplica na borda lateral para dar um charme
-                const themeColors = {purple:'#7e22ce', blue:'#1d4ed8', green:'#047857', pink:'#db2777', slate:'#1e293b', orange:'#ea580c'};
-                rNotesContainer.style.borderLeftColor = themeColors[settings.theme] || '#7e22ce';
-            } else {
-                rNotesContainer.style.display = 'none';
-            }
+            const rNotesContainer = document.getElementById('receipt-notes-container'); const rNotesText = document.getElementById('receipt-notes-text');
+            if(notes) { rNotesText.innerText = notes; rNotesContainer.style.display = 'block'; const themeColors = {purple:'#7e22ce', blue:'#1d4ed8', green:'#047857', pink:'#db2777', slate:'#1e293b', orange:'#ea580c'}; rNotesContainer.style.borderLeftColor = themeColors[settings.theme] || '#7e22ce'; } 
+            else { rNotesContainer.style.display = 'none'; }
             
             document.getElementById('receipt-total').innerText=`R$ ${finalTotal.toFixed(2).replace('.',',')}`;
             const subEl = document.getElementById('receipt-subtotal'); const discEl = document.getElementById('receipt-global-discount');
